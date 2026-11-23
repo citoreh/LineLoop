@@ -56,11 +56,26 @@
   .sheetbox .primary{background:#ffd166;border-color:#e6b84d}
   #sheetInfo,#sheetMsg{font-size:12px;color:#666}
   #sheetOut{overflow-x:auto;min-height:120px}
+  .helpbox{background:#14171d;color:var(--text);border:1px solid var(--line);border-radius:14px;width:min(820px,100%);padding:14px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);line-height:1.55;font-size:14px;-webkit-user-select:text;user-select:text}
+  .helpbox header{padding:0 0 6px;display:flex;align-items:center;gap:8px}
+  .helpbox h2{font-size:18px;margin:0 auto 0 0}
+  .helpbox h3{font-size:15px;margin:20px 0 6px;color:var(--accent)}
+  .helpbox dl{margin:0;display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 14px}
+  .helpbox dt{font-weight:700}
+  .helpbox dd{margin:0;color:#c9cfdb}
+  .helpbox ol,.helpbox ul{margin:4px 0;padding-left:22px;color:#c9cfdb}
+  .helpbox .hero{background:#1b1f27;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:6px 0 4px}
+  .helpbox .samples{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+  .helpbox .samples button{background:var(--accent);color:#1a1300;border-color:var(--accent);font-weight:600}
+  .helpbox .small{font-size:12.5px;color:var(--muted)}
+  .helpbox kbd{background:#262b35;border:1px solid #39404d;border-radius:5px;padding:0 5px;font-size:12px}
+  @media (max-width:560px){ .helpbox dl{grid-template-columns:1fr} .helpbox dd{margin-bottom:6px} }
 </style>
 </head>
 <body>
 <header>
   <h1>Line Loop</h1>
+  <button id="helpBtn" title="How everything works">❓ Help</button>
   <span class="hint">Draw lines — y axis = pitch, x axis = time. Every line becomes a voice in the loop.</span>
 </header>
 
@@ -95,7 +110,7 @@
 <div class="bar">
   <label class="ctl">Scale <select id="scale"></select></label>
   <button id="snap" class="on" title="Snap pitch to scale notes">Snap: on</button>
-  <button id="beat" class="on" title="Kick + hats">Beat: on</button>
+  <label class="ctl" title="Drum style. Hip-hop styles add an 808 bass that follows your lowest line">Beat <select id="beatStyle"><option value="off">Off</option><option value="basic">Basic</option><option value="boombap">Boom bap</option><option value="trap">Trap</option><option value="lofi">Lo-fi</option></select></label>
   <button id="rev" title="Play the loop right-to-left">⇄ Reverse: off</button>
   <button id="keys" class="on" title="Piano keyboard, note names and chord names while playing">🎹 Keys: on</button>
   <button id="chords" title="Where a line loops back and crosses the playhead several times, play every crossing at once">✳ Crossings: one</button>
@@ -155,6 +170,87 @@
     <div id="sheetMsg">Open the .musicxml file in MuseScore (free) to edit, play back or print it as PDF.</div>
   </div>
 </div>
+<div class="modal" id="help" hidden>
+  <div class="helpbox">
+    <header><h2>❓ How Line Loop works</h2><button id="helpClose">Close</button></header>
+
+    <section class="hero">
+      <p><b>Draw lines, hear music.</b> Up and down is <b>pitch</b> (higher = higher note), left to right is <b>time</b>. A playhead sweeps across and every line becomes an instrument in a repeating loop.</p>
+      <div class="samples">
+        <button data-sample="wave">〰️ Draw a wave for me</button>
+        <button data-sample="ode">🎻 Play a famous melody</button>
+        <button data-sample="name">✍️ Text as a trap beat</button>
+        <button data-sample="colour">🎨 Colour picture → band</button>
+      </div>
+      <p class="small">Each sample loads and starts playing. Then try changing things — everything below can be adjusted while it plays.</p>
+    </section>
+
+    <h3>Quick start</h3>
+    <ol>
+      <li>Pick an instrument (the coloured circles) and <b>draw</b> a line with your finger or mouse. You hear it as you draw.</li>
+      <li>Press <b>▶ Play</b>. Draw more lines — each one is another instrument.</li>
+      <li>Change the <b>Scale</b> or <b>Beat</b>, then download it as <b>WAV + MIDI</b>, a <b>Video</b> or <b>Sheet</b> music.</li>
+    </ol>
+
+    <h3>▶ Play & download (top row)</h3>
+    <dl>
+      <dt>▶ Play / ■ Stop</dt><dd>Starts or stops the loop. Keyboard: <kbd>Space</kbd>.</dd>
+      <dt>↶ Undo · Clear</dt><dd>Remove the last line, or every line. Keyboard: <kbd>Ctrl/⌘ Z</kbd>.</dd>
+      <dt>Demos…</dt><dd>Ready-made loops: Ode to Joy, Twinkle Twinkle, Frère Jacques (a 4-voice round), Für Elise, Greensleeves, Canon in D, a short piece in Shur, and the original Line Loop demo. Each sets its own scale, tempo and instruments.</dd>
+      <dt>×1 … ×8</dt><dd>How many times the loop repeats in your downloads.</dd>
+      <dt>⬇ WAV + MIDI</dt><dd>A .zip with: <b>.wav</b> audio (exactly what you hear), <b>.mid</b> (one track per line + drums + 808, opens in GarageBand, Logic, Ableton, FL Studio…), <b>.musicxml</b> sheet music, and <b>.json</b> (your drawing).</dd>
+      <dt>16:9 · 1:1 · 9:16 + ⬇ Video</dt><dd>Records the loop with its sound as an MP4 — widescreen, square (Instagram feed) or vertical (Reels/Stories/TikTok). It records in real time, so keep the page visible. Firefox makes WebM instead of MP4.</dd>
+      <dt>🎼 Sheet</dt><dd>Shows your loop as sheet music, one stave per line, notes rounded to 1/16. Download as MusicXML (MuseScore, Sibelius, Finale, Dorico) + SVG. Persian quarter-tones are written with koron / sori.</dd>
+    </dl>
+
+    <h3>✏️ Instruments & editing</h3>
+    <dl>
+      <dt>✏️ Draw / 👆 Select</dt><dd><b>Draw</b> makes new lines. <b>Select</b> lets you tap a line to edit it: tap an instrument to change its sound, pick a colour, <b>drag</b> it to move it (sideways = when, up/down = pitch), or <b>🗑 Delete</b> it. Keyboard: <kbd>Delete</kbd>, <kbd>Esc</kbd> to finish.</dd>
+      <dt>Instruments</dt><dd>Sine, Triangle, Square, Saw (classic synths) · Organ · <b>Ney</b> (breathy flute) · Strings · Bass (an octave lower) · Bell · Pluck · <b>Santur</b> (hammered, with tremolo) · Choir.</dd>
+      <dt>Colour · Auto</dt><dd>Choose the colour of the next line (or of the selected line). <b>Auto</b> uses the instrument's own colour.</dd>
+    </dl>
+
+    <h3>🎚 Sound & timing</h3>
+    <dl>
+      <dt>Scale</dt><dd>Which notes the lines play: Major / Minor pentatonic (always sounds nice), Major, Minor, Dorian, <b>Shur</b> (Persian, with the koron quarter-tone second) or Chromatic (every note).</dd>
+      <dt>Snap</dt><dd><b>On</b>: lines play clean notes from the scale. <b>Off</b>: they glide smoothly, exactly following your hand — great for signatures and sweeping curves.</dd>
+      <dt>Beat</dt><dd><b>Basic</b> kick + hats · <b>Boom bap</b> (90 bpm, swung) · <b>Trap</b> (140 bpm, hi-hat rolls) · <b>Lo-fi</b> (78 bpm, soft) · Off. Hip-hop beats add an <b>808 bass that follows your lowest line</b>, plus extra kicks, ghost snares and hat rolls shaped by your drawing.</dd>
+      <dt>⇄ Reverse</dt><dd>Plays right-to-left — handy for Persian/Arabic text so it plays in reading order.</dd>
+      <dt>🎹 Keys</dt><dd>Shows the piano keyboard on the left (keys light up as they play), note names next to the playhead dots, and the chord name at the top.</dd>
+      <dt>✳ Crossings</dt><dd><b>One</b>: a line plays one note at a time. <b>All</b>: where a line loops back (a signature's "b", a crossed "t"), every crossing sounds together as a chord.</dd>
+      <dt>Tempo · Bars · Echo</dt><dd>Speed in beats per minute · loop length (1–8 bars of 4 beats) · amount of echo.</dd>
+    </dl>
+
+    <h3>🖼 Images</h3>
+    <dl>
+      <dt>🖼 Image</dt><dd>Load a picture (or drop one on the canvas). It's shown faintly behind the grid and traced into lines automatically.</dd>
+      <dt>Trace</dt><dd><b>Ink</b> — follows the middle of each pen stroke; best for <b>signatures, handwriting, calligraphy, line drawings</b>. Dots (on an i, full stops) become short notes. · <b>Outline</b> — follows edges; good for shapes, logos, photos. · <b>Melody bands</b> — splits the picture into horizontal strips and follows the strongest marks; smooth tunes from busy photos.</dd>
+      <dt>Detail · Voices · Fit</dt><dd><b>Detail</b> 1–5: more keeps every wiggle, less gives a simpler melody. <b>Voices</b>: the most instruments to use. <b>Fit</b>: crop to the drawing so it fills the canvas.</dd>
+      <dt>Colour → instrument</dt><dd>Every colour gets its own sound — red → Organ, orange → Square, yellow → Bell, green → Pluck, cyan → Sine, blue → Bass/Choir, violet → Strings, magenta → Santur, pink → Saw. Black/grey lines are chosen by height (high → Santur/Bell, middle → Ney/Strings, low → Bass/Choir). A line that changes colour is split.</dd>
+      <dt>Re-trace · Show · ✕</dt><dd>Trace again with new settings · fade the picture in/out · remove it.</dd>
+    </dl>
+
+    <h3>✍️ Text</h3>
+    <dl>
+      <dt>Text box · Font · Bold</dt><dd>Type a word or name, choose a font, press <b>Enter</b> or <b>✍️ Make lines</b>. Fonts include ones found on your device (Persian ones too, e.g. B Nazanin, IRANSans, Vazir) and free web fonts (Vazirmatn, Lalezar, Nastaliq, Amiri, Great Vibes…). Script fonts + Ink tracing sound especially good.</dd>
+      <dt>🔍 My fonts</dt><dd>Lists every font on your computer (Chrome or Edge, in the standalone file only).</dd>
+    </dl>
+
+    <h3>📷 Camera</h3>
+    <dl>
+      <dt>📷 Camera · Draw with · Show</dt><dd>Draw in the air with your index finger. <b>Pinch</b> (thumb + index together) or <b>Point</b> (index only) to put the pen down; open your hand to lift it. Claude blocks cameras inside its pages, so use the <b>standalone line-loop.html</b> file in Chrome or Safari.</dd>
+    </dl>
+
+    <h3>💡 Ideas to try</h3>
+    <ul>
+      <li>Your signature with <b>Ink</b>, <b>Snap off</b>, Ney or Strings, and <b>Crossings: all</b>.</li>
+      <li>Your name in a Nastaliq font with <b>Reverse</b> on and the <b>Shur</b> scale.</li>
+      <li>A children's drawing in colour with <b>Colour → instrument</b>, then a <b>9:16 video</b>.</li>
+      <li>Any line drawing + <b>Trap</b> + 4 bars = an instant rap beat to write over.</li>
+    </ul>
+    <p class="small">Your drawing and settings are remembered in this browser. Open this guide any time with <b>❓ Help</b>.</p>
+  </div>
+</div>
 <footer>Inspired by hand-tracked line instruments (JS + Web Audio). Your drawing is remembered in this browser.</footer>
 
 <script>
@@ -196,7 +292,7 @@
   let chords = false;             // a line sounds every point it crosses at once
   let showKeys = true;            // piano keyboard + note / chord names
   const dirP = p => reverse ? 1-p : p;
-  let voiceSel = 0, snap = true, beatOn = true, lineColor = null;
+  let voiceSel = 0, snap = true, beatStyle = 'basic', lineColor = null;
   let scaleName = 'Major pentatonic';
   let bpm = 96, bars = 2;
 
@@ -204,14 +300,14 @@
   const cv = $('cv'); let ctx2 = cv.getContext('2d');
   const msg = t => { $('exportMsg').textContent = t; };
 
-  function save(){ try{ localStorage.setItem('lineloop', JSON.stringify({strokes,scaleName,bpm,bars,snap,beatOn,voiceSel,imgCrop,reverse,chords,showKeys})); }catch(e){} }
+  function save(){ try{ localStorage.setItem('lineloop', JSON.stringify({strokes,scaleName,bpm,bars,snap,beatStyle,voiceSel,imgCrop,reverse,chords,showKeys})); }catch(e){} }
   (function load(){
     try{
       const d = JSON.parse(localStorage.getItem('lineloop')||'null');
       if(!d) return;
       strokes = (d.strokes||[]).filter(s=>s&&s.pts&&INSTR[s.v]);
       scaleName = d.scaleName in SCALES ? d.scaleName : scaleName;
-      bpm = d.bpm||bpm; bars = d.bars||bars; snap = d.snap!==false; beatOn = d.beatOn!==false;
+      bpm = d.bpm||bpm; bars = d.bars||bars; snap = d.snap!==false; beatStyle = d.beatStyle || (d.beatOn===false?'off':'basic');
       voiceSel = INSTR[d.voiceSel] ? d.voiceSel : 0;
       if(d.imgCrop && d.imgCrop.w>0) imgCrop = d.imgCrop;
       reverse = !!d.reverse; chords = !!d.chords; showKeys = d.showKeys!==false;
@@ -239,7 +335,7 @@
   $('scale').value = scaleName; $('bpm').value = bpm; $('bpmv').textContent = bpm; $('bars').value = String(bars);
   const syncToggles = ()=>{
     $('snap').textContent = 'Snap: '+(snap?'on':'off'); $('snap').classList.toggle('on',snap);
-    $('beat').textContent = 'Beat: '+(beatOn?'on':'off'); $('beat').classList.toggle('on',beatOn);
+    $('beatStyle').value = beatStyle;
     $('rev').textContent = '⇄ Reverse: '+(reverse?'on':'off'); $('rev').classList.toggle('on',reverse);
     $('keys').textContent = '🎹 Keys: '+(showKeys?'on':'off'); $('keys').classList.toggle('on',showKeys); $('stage').classList.toggle('keys',showKeys);
     $('chords').textContent = '✳ Crossings: '+(chords?'all':'one'); $('chords').classList.toggle('on',chords);
@@ -410,18 +506,6 @@
       st.last=f;
     } else if(st.on){ v.release(t); st.on=false; }
   }
-  function kick(c,dest,t){
-    const o=c.createOscillator(), g=c.createGain();
-    o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(42,t+.12);
-    g.gain.setValueAtTime(.7,t); g.gain.exponentialRampToValueAtTime(.001,t+.28);
-    o.connect(g); g.connect(dest); o.start(t); o.stop(t+.3);
-  }
-  function hat(c,dest,t,vol){
-    const n=c.createBufferSource(); n.buffer=noise(c);
-    const hp=c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000;
-    const g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+.045);
-    n.connect(hp); hp.connect(g); g.connect(dest); n.start(t); n.stop(t+.06);
-  }
   function buildBus(c){
     const comp=c.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=4;
     const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5000;
@@ -431,6 +515,118 @@
     lp.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(comp);
     const e=$('echo').value/100; wet.gain.value=e*.6; fb.gain.value=e*.6; delay.delayTime.value=60/bpm*.75;
     return {comp,master,delay,fb,wet};
+  }
+
+  // ================= BEATS (basic / boom bap / trap / lo-fi) =================
+  // Patterns are 16 steps per bar. Hip-hop styles add an 808 that follows your lowest line, and extra kicks,
+  // ghost snares and hi-hat rolls taken from the shape of your drawing.
+  const BEATS={
+    basic:  {name:'Basic',   bpm:null, swing:.5,  kick:'x...x...x...x...', snare:'................', clap:'................', hat:'x.x.x.x.x.x.x.x.', ohat:'................', rim:'................', b808:false},
+    boombap:{name:'Boom bap',bpm:90,  swing:.58, kick:'x......x..x.....', snare:'....x.......x...', clap:'................', hat:'x.x.x.x.x.x.x.x.', ohat:'..............x.', rim:'................', b808:true, bassMax:1,  bassVol:.5},
+    trap:   {name:'Trap',    bpm:140, swing:.5,  kick:'x......x..x.....', snare:'........x.......', clap:'........x.......', hat:'xxxxxxxxxxxxxxxx', ohat:'................', rim:'................', b808:true, bassMax:2,  bassVol:.62, rolls:true},
+    lofi:   {name:'Lo-fi',   bpm:78,  swing:.62, kick:'x.....x...x.....', snare:'................', clap:'................', hat:'x.x.x.x.x.x.x.x.', ohat:'................', rim:'....x.......x...', b808:true, bassMax:1,  bassVol:.4, soft:true},
+  };
+  // events for one loop: {step, off (beats), type, vel, f?, len? (beats)}
+  function beatEvents(){
+    const B=BEATS[beatStyle]; if(!B) return [];
+    const steps=bars*16, ev=[], hip=beatStyle!=='basic';
+    // read the drawing at every 16th step
+    const info=[]; let prevOn=new Set();
+    for(let s=0;s<steps;s++){
+      const p=dirP((s+.5)/steps), ys=[], on=new Set(); let slope=0;
+      strokes.forEach((st,i)=>{ const y=sampleStroke(st,p); if(y===null) return; ys.push(y); on.add(i);
+        const y2=sampleStroke(st,dirP(Math.min(.999,(s+1.5)/steps))); if(y2!==null) slope=Math.max(slope,Math.abs(y2-y)); });
+      const onset=[...on].some(i=>!prevOn.has(i)); prevOn=on;
+      info.push({ys, low: ys.length?Math.max(...ys):null, high: ys.length?Math.min(...ys):null, onset, slope, n:ys.length});
+    }
+    const kicks=new Set();
+    for(let s=0;s<steps;s++){
+      const b=s%16, I=info[s], dens=Math.min(1,I.n/3), soft=B.soft?.7:1;
+      if(B.kick[b]==='x'){ ev.push({step:s,off:0,type:'kick',vel:(b===0?1:.85)*soft}); kicks.add(s); }
+      if(B.snare[b]==='x') ev.push({step:s,off:0,type:'snare',vel:.9*soft});
+      if(B.clap[b]==='x')  ev.push({step:s,off:0,type:'clap',vel:.8});
+      if(B.rim[b]==='x')   ev.push({step:s,off:0,type:'rim',vel:.7});
+      if(B.ohat[b]==='x')  ev.push({step:s,off:0,type:'ohat',vel:.35});
+      else if(B.hat[b]==='x'){
+        const acc = beatStyle==='trap' ? (b%2?.45:.75) : (b%4===2?.9:.6);
+        ev.push({step:s,off:0,type:'hat',vel:acc*(.7+.5*dens)*soft*(beatStyle==='basic'?(b%4===2?.8:.35):1)});
+      }
+    }
+    if(hip){
+      const bar=s=>Math.floor(s/16), cnt={kick:{},ghost:{},roll:{}}, inc=(o,k)=>(o[k]=(o[k]||0)+1);
+      for(let s=0;s<steps;s++){
+        const b=s%16, I=info[s];
+        // extra kicks where a low line starts a note (away from the snare)
+        if(I.onset && I.low!==null && I.low>.55 && ![3,4,5,11,12,13].includes(b) && !kicks.has(s) && !kicks.has(s-1) && (cnt.kick[bar(s)]||0)<2){
+          ev.push({step:s,off:0,type:'kick',vel:.75}); kicks.add(s); inc(cnt.kick,bar(s)); }
+        // ghost snares where a high line starts a note
+        if(beatStyle!=='trap' && I.onset && I.high!==null && I.high<.45 && [7,9,15].includes(b) && (cnt.ghost[bar(s)]||0)<2){
+          ev.push({step:s,off:0,type:'snare',vel:.22}); inc(cnt.ghost,bar(s)); }
+        // trap hi-hat rolls where a line is steep, plus a roll at the end of every second bar
+        if(B.rolls && ((I.slope>.05 && I.n && b%2===1 && (cnt.roll[bar(s)]||0)<2) || (b===15 && bar(s)%2===1))){
+          const n = I.slope>.1 ? 3 : 2; for(let k=1;k<n;k++) ev.push({step:s,off:k*.25/n,type:'hat',vel:.4}); inc(cnt.roll,bar(s)); }
+      }
+      // 808 on every kick: pitch from the lowest line there (or the last one seen), folded into E1–E2
+      if(B.b808){
+        const ks=[...kicks].sort((a,b)=>a-b); let lastLow=null;
+        ks.forEach((s,i)=>{
+          let low=info[s].low; for(let k=s;low===null && k>=0;k--) low=info[k].low;
+          if(low===null) low=lastLow; lastLow=low;
+          let f = low===null ? BASE/2 : yToFreq(low); while(f>82.5) f/=2; while(f<41.2) f*=2;
+          const next = i<ks.length-1 ? ks[i+1] : ks[0]+steps, len=Math.max(.5,Math.min(B.bassMax,(next-s)/4));
+          ev.push({step:s,off:0,type:'808',vel:B.bassVol,f,len});
+        });
+      }
+    }
+    // swing: push every off-beat 16th late
+    const sw=(B.swing-.5)*.5;
+    for(const e of ev) if(e.step%2===1) e.off+=sw*.5;
+    return ev;
+  }
+  function playDrum(c,dest,e,t){
+    const spb=60/bpm, k=cacheFor(c), g=c.createGain(); if(e.type!=='808') g.connect(dest);
+    const nz=(dur)=>{ const n=c.createBufferSource(); n.buffer=noise(c); n.start(t); n.stop(t+dur); return n; };
+    const filt=(type,f,q=1)=>{ const b=c.createBiquadFilter(); b.type=type; b.frequency.value=f; b.Q.value=q; return b; };
+    switch(e.type){
+      case 'kick': { const o=c.createOscillator(); o.frequency.setValueAtTime(160,t); o.frequency.exponentialRampToValueAtTime(45,t+.11);
+        g.gain.setValueAtTime(.8*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+.32); o.connect(g); o.start(t); o.stop(t+.34);
+        const cl=filt('highpass',3000), cg=c.createGain(); cg.gain.setValueAtTime(.25*e.vel,t); cg.gain.exponentialRampToValueAtTime(.001,t+.012); nz(.02).connect(cl); cl.connect(cg); cg.connect(dest); break; }
+      case 'snare': { const bp=filt('bandpass',1900,.8); nz(.25).connect(bp); bp.connect(g);
+        g.gain.setValueAtTime(.55*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+.2);
+        const o=c.createOscillator(), og=c.createGain(); o.type='triangle'; o.frequency.setValueAtTime(220,t); o.frequency.exponentialRampToValueAtTime(160,t+.08);
+        og.gain.setValueAtTime(.4*e.vel,t); og.gain.exponentialRampToValueAtTime(.001,t+.12); o.connect(og); og.connect(dest); o.start(t); o.stop(t+.14); break; }
+      case 'clap': { const bp=filt('bandpass',1200,1.2); nz(.3).connect(bp); bp.connect(g);
+        g.gain.setValueAtTime(0,t); [0,.011,.022].forEach(d=>{ g.gain.setValueAtTime(.5*e.vel,t+d); g.gain.exponentialRampToValueAtTime(.05,t+d+.009); });
+        g.gain.setValueAtTime(.45*e.vel,t+.03); g.gain.exponentialRampToValueAtTime(.001,t+.22); break; }
+      case 'hat': case 'ohat': { const hp=filt('highpass',7500); nz(e.type==='ohat'?.35:.06).connect(hp); hp.connect(g);
+        const d=e.type==='ohat'?.28:.045; g.gain.setValueAtTime(.16*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+d); break; }
+      case 'rim': { const o=c.createOscillator(); o.type='square'; o.frequency.value=820; const bp=filt('bandpass',1700,3); o.connect(bp); bp.connect(g);
+        g.gain.setValueAtTime(.35*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+.04); o.start(t); o.stop(t+.05); break; }
+      case '808': {
+        if(!k.sat){ k.sat=c.createWaveShaper(); const cu=new Float32Array(1024); for(let i=0;i<1024;i++){ const x=i/511.5-1; cu[i]=Math.tanh(2.2*x); } k.sat.curve=cu; k.sat.connect(dest); }
+        if(k.last808){ try{ k.last808.gain.cancelScheduledValues(t); k.last808.gain.setTargetAtTime(0,t,.012); }catch(_){} }  // choke the previous 808
+        g.connect(k.sat);
+        const o=c.createOscillator(), len=e.len*spb;
+        o.frequency.setValueAtTime(e.f*1.9,t); o.frequency.exponentialRampToValueAtTime(e.f,t+.05);
+        g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(e.vel,t+.006); g.gain.setTargetAtTime(e.vel*.6,t+.08,.15); g.gain.setTargetAtTime(0,t+len*.85,.07);
+        o.connect(g); o.start(t); o.stop(t+len+.6); k.last808=g; break; }
+    }
+  }
+  // live scheduling: step-by-step with a short look-ahead, rebuilt at every loop start
+  let drumEv=[], drumStep=0, drumTime=0;
+  function realignDrums(){
+    if(!ac) return;
+    const steps=bars*16, sdur=loopDur()/steps, p=phase(), loopStart=ac.currentTime-p*loopDur(), k=Math.ceil(p*steps-1e-6);
+    drumStep=k; drumTime=loopStart+k*sdur; drumEv=beatEvents();
+  }
+  function scheduleBeats(){
+    const steps=bars*16, sdur=loopDur()/steps, spb=60/bpm;
+    while(drumTime < ac.currentTime + .12){
+      const s=drumStep%steps;
+      if(s===0) drumEv=beatEvents();
+      if(beatStyle!=='off') for(const e of drumEv) if(e.step===s) playDrum(ac,bus.comp,e,drumTime+e.off*spb);
+      drumStep++; drumTime+=sdur;
+    }
   }
 
   // ================= LIVE AUDIO =================
@@ -451,14 +647,7 @@
   }
   function dropVoice(L,t){ for(const u of L.subs){ u.v.release(t); u.v.stop(t+1); } }
   function killVoices(){ for(const [,L] of live) dropVoice(L,ac.currentTime); live.clear(); }
-  function scheduleBeats(){
-    const step = 60/bpm/2;
-    while(nextBeat < ac.currentTime + .12){
-      if(beatOn){ if(beatIdx%2===0) kick(ac,bus.comp,nextBeat); hat(ac,bus.comp,nextBeat, beatIdx%2 ? .12 : .05); }
-      nextBeat += step; beatIdx++;
-    }
-  }
-  function play(){ ensureAudio(); ac.resume(); startT = ac.currentTime+.05; nextBeat=startT; beatIdx=0; playing=true; $('play').textContent='■ Stop'; }
+  function play(){ ensureAudio(); ac.resume(); startT = ac.currentTime+.05; drumStep=0; drumTime=startT; drumEv=beatEvents(); playing=true; $('play').textContent='■ Stop'; }
   function stop(){ playing=false; if(ac) killVoices(); $('play').textContent='▶ Play'; }
   function phase(){ return playing ? (((ac.currentTime-startT)/loopDur())%1+1)%1 : 0; }
   function audioTick(){
@@ -765,7 +954,7 @@
     if(!key) return;
     if(key==='orig') return demo();
     const D=DEMOS[key];
-    scaleName=D.scale; bpm=D.bpm; bars=D.bars; beatOn=D.beat; snap=true;
+    scaleName=D.scale; bpm=D.bpm; bars=D.bars; beatStyle=D.beat?'basic':'off'; snap=true;
     $('scale').value=scaleName; $('bpm').value=bpm; $('bpmv').textContent=bpm; $('bars').value=String(bars);
     syncToggles(); setDelayTime();
     strokes = D.parts.map(p=>partToStroke(p,bars*4));
@@ -778,7 +967,7 @@
   function demo(){
     const line=(v,fn,x0=0,x1=1,steps=60)=>{ const pts=[]; for(let i=0;i<=steps;i++){ const x=x0+(x1-x0)*i/steps; pts.push({x:+x.toFixed(4),y:+fn(x).toFixed(4)}); } return {pts,v}; };
     const ix=id=>INSTR.findIndex(I=>I.id===id);
-    scaleName='Major pentatonic'; bpm=96; bars=2; beatOn=true;
+    scaleName='Major pentatonic'; bpm=96; bars=2; beatStyle='basic';
     $('scale').value=scaleName; $('bpm').value=bpm; $('bpmv').textContent=bpm; $('bars').value=String(bars); syncToggles(); setDelayTime();
     strokes = [
       line(ix('ney'), x=>.5-.28*Math.sin(x*Math.PI*4)*Math.exp(-x*.4), 0, 1, 120),
@@ -797,14 +986,20 @@
   $('demo').onchange = e=>{ loadDemo(e.target.value); e.target.value=''; };
   $('scale').onchange = e=>{ scaleName=e.target.value; save(); };
   $('snap').onclick = ()=>{ snap=!snap; syncToggles(); save(); };
-  $('beat').onclick = ()=>{ beatOn=!beatOn; syncToggles(); save(); };
+  $('beatStyle').onchange = e=>{
+    beatStyle=e.target.value; const B=BEATS[beatStyle];
+    if(B && B.bpm){ const p=phase(); bpm=B.bpm; $('bpm').value=bpm; $('bpmv').textContent=bpm; if(playing) startT=ac.currentTime-p*loopDur(); setDelayTime(); }
+    if(playing) realignDrums();
+    msg(B ? `${B.name} beat${B.bpm?` · ${bpm} bpm`:''}${B.b808?' · 808 follows your lowest line':''}` : 'Beat off');
+    syncToggles(); save();
+  };
   $('rev').onclick = ()=>{ reverse=!reverse; syncToggles(); save(); };
   $('chords').onclick = ()=>{ chords=!chords; syncToggles(); save(); };
   $('keys').onclick = ()=>{ showKeys=!showKeys; syncToggles(); resize(); save(); };
-  $('bars').onchange = e=>{ const p=phase(); bars=+e.target.value; if(playing) startT = ac.currentTime - p*loopDur(); save(); };
+  $('bars').onchange = e=>{ const p=phase(); bars=+e.target.value; if(playing){ startT = ac.currentTime - p*loopDur(); realignDrums(); } save(); };
   $('bpm').oninput = e=>{
     const p=phase(); bpm=+e.target.value; $('bpmv').textContent=bpm;
-    if(playing){ startT = ac.currentTime - p*loopDur(); nextBeat = ac.currentTime+.02; }
+    if(playing){ startT = ac.currentTime - p*loopDur(); realignDrums(); }
     setDelayTime(); save();
   };
   $('echo').oninput = setEcho;
@@ -866,6 +1061,18 @@
     for(let i=0;i<B.length;i++) M[i] = darkInk ? (B[i]<t && bg-B[i]>minGap) : (B[i]>t && B[i]-bg>minGap);
     return {M,bg};
   }
+  // colour-aware maps: D = how far each pixel's colour is from the background colour (0..1)
+  function colourMaps(img, crop, GW, GH){
+    const {px,L}=lumaOf(img,crop,GW,GH), n=GW*GH;
+    const R=new Float32Array(n), G=new Float32Array(n), Bl=new Float32Array(n);
+    for(let i=0;i<n;i++){ R[i]=px[i*4]/255; G[i]=px[i*4+1]/255; Bl[i]=px[i*4+2]/255; }
+    const bgc=[pct(R,.5),pct(G,.5),pct(Bl,.5)], D=new Float32Array(n);
+    for(let i=0;i<n;i++) D[i]=Math.sqrt(((R[i]-bgc[0])**2+(G[i]-bgc[1])**2+(Bl[i]-bgc[2])**2)/3);
+    return {px,L,D:blur3(D,GW,GH),R,G,Bl,bgc};
+  }
+  function inkMaskD(D){ const t=Math.max(otsu(D),.1), M=new Uint8Array(D.length); for(let i=0;i<D.length;i++) M[i]=D[i]>t?1:0; return M; }
+  const HUE_NAMES=[[15,'red'],[40,'orange'],[68,'yellow'],[100,'lime'],[145,'green'],[170,'teal'],[200,'cyan'],[248,'blue'],[285,'violet'],[320,'magenta'],[345,'pink'],[361,'red']];
+  const hueName=h=>HUE_NAMES.find(([lim])=>h<lim)[1];
   function removeSpecks(M,GW,GH,minArea){ // returns the surviving blobs (pixel lists)
     const seen=new Uint8Array(M.length), stack=[], blobs=[];
     for(let i=0;i<M.length;i++){ if(!M[i]||seen[i]) continue;
@@ -939,7 +1146,7 @@
   function inkCrop(img){
     const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height, s=240/Math.max(iw,ih);
     const GW=Math.max(8,Math.round(iw*s)), GH=Math.max(8,Math.round(ih*s));
-    const {L}=lumaOf(img,{x:0,y:0,w:1,h:1},GW,GH), {M}=inkMask(blur3(L,GW,GH));
+    const {D}=colourMaps(img,{x:0,y:0,w:1,h:1},GW,GH), M=inkMaskD(D);
     const xs=[],ys=[]; for(let i=0;i<M.length;i++) if(M[i]){ xs.push(i%GW); ys.push((i/GW)|0); }
     if(xs.length<10) return {x:0,y:0,w:1,h:1};
     xs.sort((a,b)=>a-b); ys.sort((a,b)=>a-b);
@@ -958,15 +1165,15 @@
     const aspect=(imgCrop.w*iw)/(imgCrop.h*ih), long=160+detail*110; // detail 1..5 → 270..710 px
     const GW = aspect>=1 ? long : Math.max(24,Math.round(long*aspect));
     const GH = aspect>=1 ? Math.max(24,Math.round(long/aspect)) : long;
-    const {px,L}=lumaOf(bgImg,imgCrop,GW,GH), B=blur3(L,GW,GH);
-    const bg=pct(B,.5), unit=long/300; // scale pixel thresholds with resolution
+    const {px,D,R,G,Bl}=colourMaps(bgImg,imgCrop,GW,GH);
+    const unit=long/300; // scale pixel thresholds with resolution
     let paths=[];
 
     if(mode==='ink'){
-      const {M}=inkMask(B);
+      const M=inkMaskD(D);
       const blobs=removeSpecks(M,GW,GH,Math.round(6*unit*unit));
       paths=traceSkeleton(thin(M,GW,GH),GW,GH).filter(p=>p.length>=Math.max(4,3*unit));
-      paths.sort((a,b)=>b.length-a.length); paths=paths.slice(0,160);
+      paths.sort((a,b)=>b.length-a.length); paths=paths.slice(0,200);
       // dots (i-dots, full stops, accents): blobs no traced path passes through become a short note
       const onPath=new Uint8Array(GW*GH); for(const p of paths) for(const [x,y] of p) onPath[y*GW+x]=1;
       for(const b of blobs){
@@ -976,25 +1183,26 @@
         paths.push([[cx-half,cy],[cx+half,cy]]);
       }
     } else if(mode==='outline'){
-      const Mg=new Float32Array(GW*GH);
-      for(let y=1;y<GH-1;y++) for(let x=1;x<GW-1;x++){
-        const v=(dx,dy)=>B[(y+dy)*GW+x+dx];
-        const gx=-v(-1,-1)-2*v(-1,0)-v(-1,1)+v(1,-1)+2*v(1,0)+v(1,1);
-        const gy=-v(-1,-1)-2*v(0,-1)-v(1,-1)+v(-1,1)+2*v(0,1)+v(1,1);
-        Mg[y*GW+x]=Math.hypot(gx,gy);
+      // colour edges: Sobel on each channel, so edges between equally-bright colours are found too
+      const ch=[blur3(R,GW,GH),blur3(G,GW,GH),blur3(Bl,GW,GH)], Mg=new Float32Array(GW*GH);
+      for(let y=1;y<GH-1;y++) for(let x=1;x<GW-1;x++){ let s2=0;
+        for(const C of ch){ const v=(dx,dy)=>C[(y+dy)*GW+x+dx];
+          const gx=-v(-1,-1)-2*v(-1,0)-v(-1,1)+v(1,-1)+2*v(1,0)+v(1,1), gy=-v(-1,-1)-2*v(0,-1)-v(1,-1)+v(-1,1)+2*v(0,1)+v(1,1);
+          s2+=gx*gx+gy*gy; }
+        Mg[y*GW+x]=Math.sqrt(s2/3);
       }
       const thr=Math.max(pct(Mg,.88),.08), E=new Uint8Array(GW*GH);
       for(let i=0;i<E.length;i++) E[i]=Mg[i]>=thr?1:0;
       paths=traceSkeleton(thin(E,GW,GH),GW,GH).filter(p=>p.length>=8*unit);
-      paths.sort((a,b)=>b.length-a.length); paths=paths.slice(0,N*5);
+      paths.sort((a,b)=>b.length-a.length); paths=paths.slice(0,N*6);
     } else {
-      const ink=B.map(v=>Math.abs(v-bg)), thr=Math.max(pct(ink,.7),.06);
+      const thr=Math.max(pct(D,.7),.06);
       for(let b=0;b<N;b++){
         const y0=Math.floor(b*GH/N), y1=Math.floor((b+1)*GH/N);
         let run=[];
         const flush=()=>{ if(run.length>=5*unit) paths.push(run); run=[]; };
         for(let x=0;x<GW;x++){
-          let by=-1,bv=0; for(let y=y0;y<y1;y++){ const v=ink[y*GW+x]; if(v>bv){bv=v;by=y;} }
+          let by=-1,bv=0; for(let y=y0;y<y1;y++){ const v=D[y*GW+x]; if(v>bv){bv=v;by=y;} }
           if(bv>=thr){ const prev=run[run.length-1]; if(prev && Math.abs(prev[1]-by)>(y1-y0)*.8) flush(); run.push([x,by]); }
           else flush();
         }
@@ -1003,35 +1211,64 @@
     }
     if(!paths.length){ msg('No clear lines found — try another trace mode or more detail'); return; }
 
-    // clean each path: light smoothing (less at high detail), then keep only shape-carrying points
-    const sw = Math.max(1,Math.round(unit*1.3)), eps = unit*(.16+(5-detail)*.1);
-    const cleaned = paths.map(p=>({raw:p.map(([x,y])=>[Math.round(x),Math.round(y)]), pts: p.length<5 ? p : rdp(smooth(p,sw),eps)}));
-    const groups = packPaths(cleaned.map(c=>c.pts), N);
-    const rawOf = new Map(cleaned.map(c=>[c.pts,c.raw]));
+    // ---- colour of every point → split paths where the colour changes ----
     const useMap=$('cmap').checked;
-    strokes = groups.map((grp,idx)=>{
-      // colour: in each 3×3 neighbourhood take the pixel that stands out most from the background
-      let R=0,G=0,Bc=0,n=0,sy=0,np=0;
-      for(const P of grp) for(const [x,y] of rawOf.get(P)){ let bi=-1,bv=-1;
-        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=x+dx,yy=y+dy; if(xx<0||yy<0||xx>=GW||yy>=GH) continue; const i=yy*GW+xx, v=Math.abs(L[i]-bg); if(v>bv){bv=v;bi=i;} }
-        R+=px[bi*4]; G+=px[bi*4+1]; Bc+=px[bi*4+2]; n++; sy+=y; np++; }
-      const [h,s,l]=hslOf(R/n,G/n,Bc/n), avgY=sy/np/GH;
-      const colourful = s>.22 && l>.12 && l<.92;
-      let v=voiceSel, col;
-      if(useMap){
-        if(colourful) v=nearestHue(h);
-        else { const set=GREY_SETS[Math.min(2,Math.floor(avgY*3))]; v=INSTR.findIndex(I=>I.id===set[idx%2]); }
-      } else v=(voiceSel+idx)%INSTR.length;
-      if(colourful) col=`hsl(${Math.round(h)},${Math.round(Math.max(s,.6)*100)}%,${Math.round(Math.max(l,.62)*100)}%)`;
-      const pts=[];
-      grp.forEach(P=>P.forEach(([x,y],i)=>{ const q={x:+((x+.5)/GW).toFixed(4), y:+((y+.5)/GH).toFixed(4)}; if(i===0&&pts.length) q.b=1; pts.push(q); }));
-      const st={pts,v}; if(col) st.c=col; return st;
+    const colourAt=(x,y)=>{ // the pixel in a 3×3 neighbourhood that stands out most from the background
+      let bi=-1,bv=-1; const X=Math.round(x), Y=Math.round(y);
+      for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=X+dx,yy=Y+dy; if(xx<0||yy<0||xx>=GW||yy>=GH) continue; const i=yy*GW+xx; if(D[i]>bv){bv=D[i];bi=i;} }
+      return bi<0?[128,128,128]:[px[bi*4],px[bi*4+1],px[bi*4+2]];
+    };
+    const keyOf=rgb=>{ const [h,s,l]=hslOf(...rgb); return (s>.25 && l>.12 && l<.93) ? 'h'+nearestHue(h) : 'grey'; };
+    const segs=[];
+    for(const p of paths){
+      const cols=p.map(([x,y])=>colourAt(x,y)), keys=cols.map(keyOf);
+      // majority filter so anti-aliased edges don't flicker between colours
+      const w=Math.max(2,Math.round(2*unit)), sm=keys.map((_,i)=>{ const c={}; for(let k=Math.max(0,i-w);k<=Math.min(keys.length-1,i+w);k++) c[keys[k]]=(c[keys[k]]||0)+1; return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]; });
+      // runs of one colour; very short runs join their neighbour
+      let runs=[]; for(let i=0;i<p.length;i++){ const r=runs[runs.length-1]; if(r && r.key===sm[i]) r.end=i; else runs.push({key:sm[i],start:i,end:i}); }
+      const minRun=Math.max(4,Math.round(4*unit));
+      runs=runs.reduce((acc,r)=>{ const prev=acc[acc.length-1]; if(prev && (r.end-r.start+1<minRun)){ prev.end=r.end; } else if(prev && prev.key===r.key){ prev.end=r.end; } else acc.push({...r}); return acc; },[]);
+      for(const r of runs){
+        const raw=p.slice(r.start, r.end+1); if(raw.length<2 && p.length>=2) continue;
+        const cs=cols.slice(r.start,r.end+1), rgb=[0,1,2].map(k=>cs.reduce((a,c)=>a+c[k],0)/cs.length);
+        segs.push({raw, key:r.key, rgb, avgY: raw.reduce((a,q)=>a+q[1],0)/raw.length/GH});
+      }
+    }
+    // grey/black lines: split by height so low lines get low instruments
+    for(const sg of segs) if(sg.key==='grey') sg.key='grey'+Math.min(2,Math.floor(sg.avgY*3));
+
+    // ---- one colour group = one instrument; share the voice budget by how much line each colour has ----
+    const groupsByKey=new Map();
+    for(const sg of segs){ if(!groupsByKey.has(sg.key)) groupsByKey.set(sg.key,[]); groupsByKey.get(sg.key).push(sg); }
+    let keys=[...groupsByKey.keys()].sort((a,b)=>groupsByKey.get(b).reduce((s,x)=>s+x.raw.length,0)-groupsByKey.get(a).reduce((s,x)=>s+x.raw.length,0));
+    while(keys.length>MAX_STROKES){ const k=keys.pop(); groupsByKey.get(keys[keys.length-1]).push(...groupsByKey.get(k)); groupsByKey.delete(k); }
+    const budget=Math.max(N,keys.length), lens=keys.map(k=>groupsByKey.get(k).reduce((s,x)=>s+x.raw.length,0)), totLen=lens.reduce((a,b)=>a+b,0);
+    const alloc=keys.map((k,i)=>1+Math.floor((budget-keys.length)*lens[i]/totLen));
+    const sw=Math.max(1,Math.round(unit*1.3)), eps=unit*(.16+(5-detail)*.1);
+    const legend=[];
+    strokes=[];
+    keys.forEach((k,ki)=>{
+      const list=groupsByKey.get(k);
+      const rgb=[0,1,2].map(c=>list.reduce((a,x)=>a+x.rgb[c]*x.raw.length,0)/list.reduce((a,x)=>a+x.raw.length,0));
+      const [h,s,l]=hslOf(...rgb), colourful=k.startsWith('h');
+      const col = colourful ? `hsl(${Math.round(h)},${Math.round(Math.max(s,.6)*100)}%,${Math.round(Math.min(.8,Math.max(l,.62))*100)}%)` : null;
+      let insts;
+      if(!useMap) insts=[(voiceSel+ki)%INSTR.length];
+      else if(colourful) insts=[+k.slice(1)];
+      else { const set=GREY_SETS[+k.slice(4)]; insts=set.map(id=>INSTR.findIndex(I=>I.id===id)); }
+      const cleaned=list.map(sg=>sg.raw.length<5 ? sg.raw : rdp(smooth(sg.raw,sw),eps));
+      packPaths(cleaned, alloc[ki]).forEach((grp,vi)=>{
+        const pts=[];
+        grp.forEach(P=>P.forEach(([x,y],i)=>{ const q={x:+((x+.5)/GW).toFixed(4), y:+((y+.5)/GH).toFixed(4)}; if(i===0&&pts.length) q.b=1; pts.push(q); }));
+        const st={pts, v:insts[vi%insts.length]}; if(col) st.c=col; strokes.push(st);
+      });
+      const cname = colourful ? hueName(h) : (l<.35?'black':l>.75?'white':'grey')+(k!=='grey0'&&k!=='grey1'&&k!=='grey2'?'':['·high','·mid','·low'][+k.slice(4)]);
+      legend.push(`${cname}→${[...new Set(insts.map(i=>INSTR[i].name))].join('/')}`);
     });
-    const nPts=strokes.reduce((a,s)=>a+s.pts.length,0);
-    const names=[...new Set(strokes.map(s=>INSTR[s.v].name))].join(', ');
-    msg(`Traced ${paths.length} pen stroke${paths.length>1?'s':''} into ${strokes.length} voice${strokes.length>1?'s':''} (${nPts} points): ${names}`);
+    msg(`Traced ${segs.length} stroke${segs.length>1?'s':''} into ${strokes.length} voice${strokes.length>1?'s':''}: ${legend.join(', ')}`);
     save(); updateEmpty();
   }
+
   // ================= TEXT → LINES =================
   const SYSTEM_FONTS=['Arial','Helvetica','Helvetica Neue','Times New Roman','Georgia','Verdana','Tahoma','Trebuchet MS','Courier New','Segoe UI','Segoe Script','Segoe Print','Ink Free','Comic Sans MS','Brush Script MT','Lucida Handwriting','Monotype Corsiva','Snell Roundhand','Apple Chancery','Zapfino','Bradley Hand','Noteworthy','Marker Felt','Savoye LET','Papyrus','Palatino','Baskerville','Didot','Futura','Gill Sans','Optima','Impact',
     'Geeza Pro','Al Nile','Baghdad','Damascus','Farah','Nadeem','Mishafi','Diwan Thuluth','Diwan Kufi','Kufi Standard GK','Waseem','Al Bayan','DecoType Naskh','Arabic Typesetting','Traditional Arabic','Simplified Arabic','Sakkal Majalla','Urdu Typesetting','Noto Naskh Arabic','Noto Sans Arabic','Noto Nastaliq Urdu','IranNastaliq','B Nazanin','B Titr','B Yekan','B Lotus','IRANSans','Vazir','Vazirmatn','Sahel','Shabnam','Samim'];
@@ -1086,9 +1323,10 @@
     const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
     g.font=font; g.direction=rtl?'rtl':'ltr'; g.textAlign='center'; g.textBaseline='alphabetic'; g.fillStyle='#111';
     g.fillText(text, c.width/2, pad+asc);
-    setImage(c.toDataURL('image/png'), true, ()=>{
+    return new Promise(res=>setImage(c.toDataURL('image/png'), true, ()=>{
       if(rtl && !reverse) msg($('exportMsg').textContent+' · Tip: turn on ⇄ Reverse to play right-to-left');
-    });
+      res();
+    }));
   }
   $('mkText').onclick=makeText;
   $('txt').addEventListener('keydown',e=>{ if(e.key==='Enter') makeText(); });
@@ -1329,6 +1567,56 @@
     catch(e){ $('sheetMsg').textContent = e&&e.code==='declined' ? 'Download cancelled' : 'Download failed'; }
   };
 
+  // ================= HELP + SAMPLES =================
+  const openHelp=()=>{ $('help').hidden=false; };
+  $('helpBtn').onclick=openHelp;
+  $('helpClose').onclick=()=>{ $('help').hidden=true; };
+  $('help').addEventListener('click',e=>{ if(e.target.id==='help') $('help').hidden=true; });
+  try{ if(!localStorage.getItem('lineloop-seen')){ localStorage.setItem('lineloop-seen','1'); setTimeout(openHelp,400); } }catch(e){}
+  function setControls(o){ // apply settings and sync the UI
+    if(o.scale){ scaleName=o.scale; $('scale').value=scaleName; }
+    if(o.bpm){ bpm=o.bpm; $('bpm').value=bpm; $('bpmv').textContent=bpm; setDelayTime(); }
+    if(o.bars){ bars=o.bars; $('bars').value=String(bars); }
+    if(o.beat) beatStyle=o.beat;
+    if(o.snap!==undefined) snap=o.snap;
+    if(o.reverse!==undefined) reverse=o.reverse;
+    if(o.chords!==undefined) chords=o.chords;
+    syncToggles(); save();
+  }
+  const restart=()=>{ if(playing) stop(); play(); };
+  const SAMPLES={
+    wave(){ // a flowing Ney line over Strings and Bass
+      setControls({scale:'Major pentatonic',bpm:96,bars:2,beat:'basic',snap:true,reverse:false,chords:false});
+      const line=(id,fn,x0,x1,n)=>{ const pts=[]; for(let i=0;i<=n;i++){ const x=x0+(x1-x0)*i/n; pts.push({x:+x.toFixed(4),y:+fn(x).toFixed(4)}); } return {pts,v:INSTR.findIndex(I=>I.id===id)}; };
+      strokes=[ line('ney',x=>.45-.25*Math.sin(x*Math.PI*4),0,1,120), line('strings',x=>.68+.05*Math.sin(x*Math.PI*2),0,1,60), line('bass',()=>.85,0,.48,4), line('bass',()=>.78,.5,.98,4) ];
+      save(); updateEmpty(); restart(); msg('Sample: a wave on Ney over Strings and Bass — try drawing your own line on top');
+    },
+    ode(){ loadDemo('ode'); },
+    async name(){
+      $('txt').value='Line Loop';
+      const opt=[...$('font').options].find(o=>o.value==='web:Great Vibes'); if(opt) $('font').value=opt.value;
+      $('tmode').value='ink'; $('cmap').checked=true; $('tfit').checked=true;
+      setControls({beat:'trap',bpm:140,bars:4,snap:true,reverse:false,chords:true});
+      await makeText(); restart(); msg($('exportMsg').textContent+' · Trap beat with an 808 following the lowest line');
+    },
+    colour(){ // draw a small colourful picture and trace it
+      const c=document.createElement('canvas'); c.width=900; c.height=500; const g=c.getContext('2d');
+      g.fillStyle='#fff'; g.fillRect(0,0,900,500); g.lineWidth=12; g.lineCap='round'; g.lineJoin='round';
+      const curve=(col,fn,x0,x1)=>{ g.strokeStyle=col; g.beginPath(); for(let x=x0;x<=x1;x+=4){ const y=fn(x); x===x0?g.moveTo(x,y):g.lineTo(x,y); } g.stroke(); };
+      curve('#e63946',x=>110+40*Math.sin(x/40),40,430);   // red
+      curve('#1d4ed8',x=>130+45*Math.cos(x/35),470,860);  // blue
+      curve('#f4c20d',x=>250+30*Math.sin(x/25),40,860);   // yellow
+      curve('#2a9d55',x=>360-60*Math.sin(x/90),60,600);   // green
+      curve('#8e44ad',x=>330+25*Math.sin(x/20),620,860);  // violet
+      g.strokeStyle='#222'; g.beginPath(); g.moveTo(40,450); g.lineTo(860,450); g.stroke(); // black (low)
+      g.fillStyle='#e91e8c'; g.beginPath(); g.arc(450,40,14,0,7); g.fill(); // magenta dot
+      $('tmode').value='ink'; $('cmap').checked=true; $('tfit').checked=true;
+      setControls({scale:'Major pentatonic',bpm:100,bars:2,beat:'lofi',snap:true,reverse:false,chords:false});
+      setImage(c.toDataURL('image/png'), true, ()=>{ restart(); msg($('exportMsg').textContent+' · each colour is its own instrument'); });
+    },
+  };
+  document.querySelectorAll('[data-sample]').forEach(b=>b.onclick=async()=>{ $('help').hidden=true; try{ await SAMPLES[b.dataset.sample](); }catch(e){ console.error(e); msg('Sample failed to load'); } });
+
   // ================= EXPORT (WAV + MIDI in a .zip) =================
   let downloads = null;
   (async ()=>{
@@ -1428,9 +1716,9 @@
       }
       subs.forEach(u=>u.v.stop(total));
     }
-    if(beatOn){
-      const step = 60/bpm/2;
-      for(let i=0, t=0; t<total-1e-6; i++, t=i*step){ if(i%2===0) kick(oc,ob.comp,t); hat(oc,ob.comp,t, i%2?.12:.05); }
+    if(beatStyle!=='off'){
+      const ev=beatEvents(), sdur=Ld/(bars*16), spb=60/bpm;
+      for(let L=0; L<=loops; L++) for(const e of ev.slice().sort((a,b)=>a.step-b.step||a.off-b.off)) playDrum(oc,ob.comp,e,L*Ld+e.step*sdur+e.off*spb);
     }
     const buf = await oc.startRendering();
     const start = Math.round(Ld*sr), len = buf.length-start, ch=[buf.getChannelData(0),buf.getChannelData(1)];
@@ -1462,7 +1750,7 @@
       {t:0,o:0,d:[0xff,0x51,3,(mpq>>16)&255,(mpq>>8)&255,mpq&255]},
       {t:0,o:0,d:[0xff,0x58,4,4,2,24,8]},
     ]));
-    const chans=[0,1,2,3,4,5,6,7,8,10,11,12,13,14,15];
+    const chans=[0,1,2,3,4,5,6,7,8,10,11,12,13,14]; // 9 = drums, 15 = 808
     strokes.forEach((s,si)=>{
       const I=INSTR[s.v], ch=chans[si%chans.length], tn=enc(I.name);
       const evs=[
@@ -1492,13 +1780,16 @@
       }
       tracks.push(track(evs));
     });
-    if(beatOn){
-      const evs=[{t:0,o:0,d:[0xff,0x03,5,...enc('Drums')]}], e8=PPQ/2, tot=loopT*loops;
-      for(let i=0,t=0;t<tot;i++,t=i*e8){
-        if(i%2===0) evs.push({t,o:2,d:[0x99,36,110]},{t:t+e8/2,o:0,d:[0x89,36,0]});
-        evs.push({t,o:2,d:[0x99,42,i%2?80:50]},{t:t+e8/4,o:0,d:[0x89,42,0]});
+    if(beatStyle!=='off'){
+      const ev=beatEvents(), GM={kick:36,snare:38,clap:39,hat:42,ohat:46,rim:37};
+      const evs=[{t:0,o:0,d:[0xff,0x03,5,...enc('Drums')]}], bass=[{t:0,o:0,d:[0xff,0x03,3,...enc('808')]},{t:0,o:0,d:[0xcf,38]}];
+      for(let k=0;k<loops;k++) for(const e of ev){
+        const t=Math.round(k*loopT+(e.step/4+e.off)*PPQ), vel=Math.max(1,Math.min(127,Math.round(e.vel*127)));
+        if(e.type==='808'){ const n=Math.round(69+12*Math.log2(e.f/440)); bass.push({t,o:2,d:[0x9f,n,vel]},{t:t+Math.round(e.len*PPQ*.95),o:0,d:[0x8f,n,0]}); }
+        else evs.push({t,o:2,d:[0x99,GM[e.type],vel]},{t:t+PPQ/8,o:0,d:[0x89,GM[e.type],0]});
       }
       tracks.push(track(evs));
+      if(bass.length>2) tracks.push(track(bass));
     }
     const n=tracks.length;
     return new Uint8Array([0x4d,0x54,0x68,0x64,0,0,0,6,0,1,(n>>8)&255,n&255,(PPQ>>8)&255,PPQ&255, ...tracks.flat()]);
@@ -1535,7 +1826,7 @@
     try{
       const wav=await renderWav(loops), mid=buildMidi(loops);
       const stamp=new Date().toISOString().slice(0,16).replace(/[:T]/g,'-'), base=`line-loop-${bpm}bpm-${stamp}`;
-      const json=new TextEncoder().encode(JSON.stringify({bpm,bars,scale:scaleName,snap,beat:beatOn,
+      const json=new TextEncoder().encode(JSON.stringify({bpm,bars,scale:scaleName,snap,beat:beatStyle,
         strokes:strokes.map(s=>({instrument:INSTR[s.v].name,colour:colOf(s),pts:s.pts}))},null,1));
       const blob=zip([{name:base+'.wav',data:wav},{name:base+'.mid',data:mid},{name:base+'.json',data:json},{name:base+'.musicxml',data:new TextEncoder().encode(toMusicXML(scoreParts()))}]);
       msg('Waiting for you to confirm…');
@@ -1558,7 +1849,7 @@
     if(e.code==='Space'){ e.preventDefault(); playing?stop():play(); }
     if((e.metaKey||e.ctrlKey)&&e.key==='z'){ strokes.pop(); save(); updateEmpty(); }
     if(sel && (e.key==='Delete'||e.key==='Backspace') && e.target.tagName!=='INPUT'){ e.preventDefault(); $('selDel').onclick(); }
-    if(e.key==='Escape') deselect();
+    if(e.key==='Escape'){ deselect(); $('help').hidden=true; $('sheet').hidden=true; }
   });
 })();
 </script>
