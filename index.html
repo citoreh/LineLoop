@@ -83,6 +83,7 @@
   <button id="play" class="primary">▶ Play</button>
   <button id="undo">↶ Undo</button>
   <button id="clear">Clear</button>
+  <button id="reset" title="Start fresh: remove everything and restore all settings (for new users)">⟲ Reset</button>
   <select id="demo" title="Load a demo loop"><option value="">Demos…</option></select>
   <span class="group">
     <select id="loops" title="How many times the loop repeats in the export"><option value="1">×1</option><option value="2" selected>×2</option><option value="4">×4</option><option value="8">×8</option></select>
@@ -1616,6 +1617,35 @@
     },
   };
   document.querySelectorAll('[data-sample]').forEach(b=>b.onclick=async()=>{ $('help').hidden=true; try{ await SAMPLES[b.dataset.sample](); }catch(e){ console.error(e); msg('Sample failed to load'); } });
+
+  // ================= RESET (fresh start for a new user) =================
+  function resetAll(){
+    if(playing) stop();
+    if(cam.on) stopCamera();
+    deselect(); setMode('draw'); cur=null;
+    strokes=[]; bgImg=null; imgCrop={x:0,y:0,w:1,h:1};
+    $('retrace').disabled=true; $('rmimg').disabled=true;
+    voiceSel=0; lineColor=null; $('lcol').value='#ffffff'; showInstrument(0);
+    scaleName='Major pentatonic'; bpm=96; bars=2; beatStyle='basic'; snap=true; reverse=false; chords=false; showKeys=true;
+    $('scale').value=scaleName; $('bpm').value=bpm; $('bpmv').textContent=bpm; $('bars').value='2';
+    $('echo').value=30; setEcho(); setDelayTime();
+    $('loops').value='2'; $('vfmt').value='wide';
+    $('tmode').value='ink'; $('tdetail').value=4; $('tdetailv').textContent='4'; $('tlines').value=6; $('tlinesv').textContent='6';
+    $('tfit').checked=true; $('cmap').checked=true; $('imgop').value=35; imgOp=.35;
+    $('txt').value=''; $('bold').checked=false; if($('font').options && $('font').options.length) $('font').selectedIndex=0;
+    $('gesture').value='pinch'; $('camop').value=30; camOp=.3; camMsg('');
+    $('sheet').hidden=true;
+    try{ ['lineloop','lineloop-img','lineloop-font'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    syncToggles(); resize(); updateEmpty();
+    msg('Reset — everything is back to the start');
+    openHelp();
+  }
+  let resetArmed=null;
+  $('reset').onclick=()=>{
+    if(resetArmed){ clearTimeout(resetArmed); resetArmed=null; $('reset').textContent='⟲ Reset'; $('reset').classList.remove('on'); resetAll(); return; }
+    $('reset').textContent='Tap again to reset'; $('reset').classList.add('on');
+    resetArmed=setTimeout(()=>{ resetArmed=null; $('reset').textContent='⟲ Reset'; $('reset').classList.remove('on'); },3000);
+  };
 
   // ================= EXPORT (WAV + MIDI in a .zip) =================
   let downloads = null;
