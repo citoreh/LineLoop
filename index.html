@@ -9,9 +9,10 @@
     --bg:#0e1014; --panel:#171a21; --line:#262b35; --text:#e9ecf2; --muted:#8a93a6; --accent:#ffd166;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  html,body{margin:0;background:var(--bg);color:var(--text);
     font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-user-select:none;user-select:none}
-  body{display:flex;flex-direction:column;min-height:100%}
+  body{display:flex;flex-direction:column;min-height:100%;height:auto}
+  body>*{flex-shrink:0}
   header{padding:14px 16px 6px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
   h1{font-size:18px;margin:0;letter-spacing:.02em}
   .hint{color:var(--muted);font-size:12.5px}
@@ -30,7 +31,7 @@
   input[type=range]{width:96px;accent-color:var(--accent)}
   input[type=color]{width:34px;height:32px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer}
   input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
-  .stage{flex:1;position:relative;margin:0 12px 12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:340px;background:#0b0d11}
+  .stage{flex:none;height:clamp(230px,52vh,620px);position:relative;margin:0 12px 10px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b0d11}
   canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
   .axis{position:absolute;font-size:11px;color:var(--muted);pointer-events:none}
   .ax-y{left:8px;top:8px}
@@ -70,6 +71,13 @@
   .helpbox .small{font-size:12.5px;color:var(--muted)}
   .helpbox kbd{background:#262b35;border:1px solid #39404d;border-radius:5px;padding:0 5px;font-size:12px}
   @media (max-width:560px){ .helpbox dl{grid-template-columns:1fr} .helpbox dd{margin-bottom:6px} }
+  .lane{position:relative;margin:0 12px 10px;border-radius:12px;overflow:hidden;background:#0b0d11;height:180px}
+  .lane[hidden]{display:none}
+  #lcv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+  .lanetitle{font-size:13px}
+  .lanebar,.mixer{padding-top:2px}
+  .mixv{min-width:34px;font-size:11.5px}
+  .settings{border-top:1px solid var(--line);margin-top:4px;padding-top:6px}
 </style>
 </head>
 <body>
@@ -83,6 +91,7 @@
   <button id="play" class="primary">▶ Play</button>
   <button id="undo">↶ Undo</button>
   <button id="clear">Clear</button>
+  <button id="toDrums" title="Jump to the drum layer">🥁 Drums</button>
   <button id="reset" title="Start fresh: remove everything and restore all settings (for new users)">⟲ Reset</button>
   <select id="demo" title="Load a demo loop"><option value="">Demos…</option></select>
   <span class="group">
@@ -108,6 +117,33 @@
   <button id="selDone">Done</button>
 </div>
 
+<div class="stage" id="stage">
+  <canvas id="kb"></canvas>
+  <canvas id="cv"></canvas>
+  <div id="chordOut"></div>
+  <div class="axis ax-y">▲ pitch</div>
+  <div class="axis ax-x">time ▶</div>
+  <div class="empty" id="empty">Draw a line with your finger or mouse,<br>or load an image, then press ▶ Play.<br>Tap “Demo” for a starter loop.</div>
+</div>
+<div class="bar lanebar">
+  <b class="lanetitle">🥁 Drum layer</b>
+  <span class="hint">Draw here: height = drum, a tap = one hit, a dash = a roll</span>
+  <label class="ctl" title="How often a drawn dash hits">Hits <select id="drumRate"><option value="8">1/8</option><option value="16" selected>1/16</option><option value="32">1/32</option></select></label>
+  <label class="ctl">Size <select id="laneH"><option value="120">S</option><option value="180" selected>M</option><option value="260">L</option><option value="360">XL</option></select></label>
+  <button id="drumUndo">↶ Undo drums</button>
+  <button id="drumClear">Clear drums</button>
+  <button id="laneToggle">Hide lane</button>
+</div>
+<div class="lane" id="lane"><canvas id="lcv"></canvas></div>
+<div class="bar mixer">
+  <b class="lanetitle">🎚 Mix</b>
+  <label class="ctl">Melody <input id="mixMel" type="range" min="0" max="150" value="100"><span id="mixMelv" class="mixv"></span></label>
+  <label class="ctl">Beat <input id="mixBeat" type="range" min="0" max="150" value="100"><span id="mixBeatv" class="mixv"></span></label>
+  <label class="ctl">808 <input id="mix808" type="range" min="0" max="150" value="100"><span id="mix808v" class="mixv"></span></label>
+  <label class="ctl">Drums <input id="mixDrum" type="range" min="0" max="150" value="100"><span id="mixDrumv" class="mixv"></span></label>
+</div>
+
+<div class="settings">
 <div class="bar">
   <label class="ctl">Scale <select id="scale"></select></label>
   <button id="snap" class="on" title="Snap pitch to scale notes">Snap: on</button>
@@ -152,14 +188,8 @@
   <span class="hint" id="camMsg"></span>
 </div>
 
-<div class="stage" id="stage">
-  <canvas id="kb"></canvas>
-  <canvas id="cv"></canvas>
-  <div id="chordOut"></div>
-  <div class="axis ax-y">▲ pitch</div>
-  <div class="axis ax-x">time ▶</div>
-  <div class="empty" id="empty">Draw a line with your finger or mouse,<br>or load an image, then press ▶ Play.<br>Tap “Demo” for a starter loop.</div>
 </div>
+
 <div class="modal" id="sheet" hidden>
   <div class="sheetbox">
     <header><h2>🎼 Sheet music</h2>
@@ -177,11 +207,13 @@
 
     <section class="hero">
       <p><b>Draw lines, hear music.</b> Up and down is <b>pitch</b> (higher = higher note), left to right is <b>time</b>. A playhead sweeps across and every line becomes an instrument in a repeating loop.</p>
+      <p>There are <b>two layers</b> on the same timeline: the big <b>melody canvas</b> on top, and the <b>🥁 drum layer</b> underneath, where each row is a drum. A <b>🎚 Mix</b> balances them.</p>
       <div class="samples">
         <button data-sample="wave">〰️ Draw a wave for me</button>
         <button data-sample="ode">🎻 Play a famous melody</button>
         <button data-sample="name">✍️ Text as a trap beat</button>
         <button data-sample="colour">🎨 Colour picture → band</button>
+        <button data-sample="drums">🥁 Drum groove</button>
       </div>
       <p class="small">Each sample loads and starts playing. Then try changing things — everything below can be adjusted while it plays.</p>
     </section>
@@ -190,18 +222,21 @@
     <ol>
       <li>Pick an instrument (the coloured circles) and <b>draw</b> a line with your finger or mouse. You hear it as you draw.</li>
       <li>Press <b>▶ Play</b>. Draw more lines — each one is another instrument.</li>
-      <li>Change the <b>Scale</b> or <b>Beat</b>, then download it as <b>WAV + MIDI</b>, a <b>Video</b> or <b>Sheet</b> music.</li>
+      <li>Add drums in the <b>🥁 drum layer</b> under the canvas: tap a row for a hit, drag along a row for a roll.</li>
+      <li>Balance the layers in <b>🎚 Mix</b>, change the <b>Scale</b> or <b>Beat</b>, then download it as <b>WAV + MIDI</b>, a <b>Video</b> or <b>Sheet</b> music.</li>
     </ol>
 
     <h3>▶ Play & download (top row)</h3>
     <dl>
       <dt>▶ Play / ■ Stop</dt><dd>Starts or stops the loop. Keyboard: <kbd>Space</kbd>.</dd>
-      <dt>↶ Undo · Clear</dt><dd>Remove the last line, or every line. Keyboard: <kbd>Ctrl/⌘ Z</kbd>.</dd>
+      <dt>↶ Undo · Clear</dt><dd>Remove the last line (melody or drums), or every line. Keyboard: <kbd>Ctrl/⌘ Z</kbd>.</dd>
+      <dt>🥁 Drums</dt><dd>Jumps to the drum layer (and shows it if it was hidden).</dd>
+      <dt>⟲ Reset</dt><dd>Fresh start for a new user: removes every line and the picture, puts every setting, the drum layer and the mix back to the start, and opens this guide. Tap it <b>twice</b> (the first tap asks “Tap again to reset”).</dd>
       <dt>Demos…</dt><dd>Ready-made loops: Ode to Joy, Twinkle Twinkle, Frère Jacques (a 4-voice round), Für Elise, Greensleeves, Canon in D, a short piece in Shur, and the original Line Loop demo. Each sets its own scale, tempo and instruments.</dd>
       <dt>×1 … ×8</dt><dd>How many times the loop repeats in your downloads.</dd>
-      <dt>⬇ WAV + MIDI</dt><dd>A .zip with: <b>.wav</b> audio (exactly what you hear), <b>.mid</b> (one track per line + drums + 808, opens in GarageBand, Logic, Ableton, FL Studio…), <b>.musicxml</b> sheet music, and <b>.json</b> (your drawing).</dd>
-      <dt>16:9 · 1:1 · 9:16 + ⬇ Video</dt><dd>Records the loop with its sound as an MP4 — widescreen, square (Instagram feed) or vertical (Reels/Stories/TikTok). It records in real time, so keep the page visible. Firefox makes WebM instead of MP4.</dd>
-      <dt>🎼 Sheet</dt><dd>Shows your loop as sheet music, one stave per line, notes rounded to 1/16. Download as MusicXML (MuseScore, Sibelius, Finale, Dorico) + SVG. Persian quarter-tones are written with koron / sori.</dd>
+      <dt>⬇ WAV + MIDI</dt><dd>A .zip with: <b>.wav</b> audio (exactly what you hear, using your Mix), <b>.mid</b> (one track per melody line, a <b>Drums</b> track with the beat + your drawn drums, and an <b>808</b> track — opens in GarageBand, Logic, Ableton, FL Studio…), <b>.musicxml</b> sheet music, and <b>.json</b> (your drawing).</dd>
+      <dt>16:9 · 1:1 · 9:16 + ⬇ Video</dt><dd>Records the loop with its sound as an MP4 — widescreen, square (Instagram feed) or vertical (Reels/Stories/TikTok). The drum layer appears as a strip along the bottom. It records in real time, so keep the page visible. Firefox makes WebM instead of MP4.</dd>
+      <dt>🎼 Sheet</dt><dd>Shows your melody as sheet music, one stave per line, notes rounded to 1/16 (drums aren't included). Download as MusicXML (MuseScore, Sibelius, Finale, Dorico) + SVG. Persian quarter-tones are written with koron / sori.</dd>
     </dl>
 
     <h3>✏️ Instruments & editing</h3>
@@ -211,11 +246,32 @@
       <dt>Colour · Auto</dt><dd>Choose the colour of the next line (or of the selected line). <b>Auto</b> uses the instrument's own colour.</dd>
     </dl>
 
+    <h3>🥁 Drum layer</h3>
+    <dl>
+      <dt>Where</dt><dd>The lane directly under the melody canvas. It shares the same timeline and playhead, so drums line up with your melody. You don't need to choose an instrument — anything you draw in the lane is drums.</dd>
+      <dt>Rows</dt><dd>From the top: <b>Crash</b> · <b>Open</b> hat · <b>Hi-hat</b> · <b>Tom H</b> (high tom) · <b>Clap</b> · <b>Snare</b> · <b>Tom L</b> (low tom) · <b>Kick</b>. You hear each drum as your finger reaches its row.</dd>
+      <dt>Tap · dash · diagonal</dt><dd>A <b>tap</b> = exactly one hit on the grid. A <b>dash</b> along a row = a roll. A <b>diagonal</b> line = a fill that runs across the drums (e.g. hi-hat → toms → kick).</dd>
+      <dt>Blocks & rings</dt><dd><b>Solid blocks</b> show exactly where your hits land (they flash when played). <b>Faint rings</b> show the hits of the current Beat style, so you can see both together and fill the gaps.</dd>
+      <dt>Hits</dt><dd>How fast a dash rolls: <b>1/8</b> (relaxed), <b>1/16</b> (normal) or <b>1/32</b> (fast trap-style rolls).</dd>
+      <dt>Size · Hide lane</dt><dd>Make the lane S, M, L or XL for more room, or hide it (your drums keep playing).</dd>
+      <dt>Undo drums · Clear drums</dt><dd>Remove the last drum line, or all of them — your melody stays.</dd>
+      <dt>Edit</dt><dd>In <b>👆 Select</b> mode, tap a drum line in the lane to <b>drag</b> it (sideways = when, up/down = which drum) or <b>🗑 Delete</b> it. Choosing a melody instrument while a drum line is selected turns it into a melody line.</dd>
+    </dl>
+
+    <h3>🎚 Mix</h3>
+    <dl>
+      <dt>Melody</dt><dd>Your drawn and traced lines (and the echo on them).</dd>
+      <dt>Beat</dt><dd>The Beat style's kick, snare, clap, hi-hats and rim.</dd>
+      <dt>808</dt><dd>The hip-hop bass that follows your lowest melody line.</dd>
+      <dt>Drums</dt><dd>The hits you drew in the drum layer.</dd>
+      <dt>Range</dt><dd>0% mutes a layer, 100% is normal, up to 150% louder. The mix is used for playback, WAV and video. (MIDI keeps every part on its own track so you can mix it again in your music app.)</dd>
+    </dl>
+
     <h3>🎚 Sound & timing</h3>
     <dl>
       <dt>Scale</dt><dd>Which notes the lines play: Major / Minor pentatonic (always sounds nice), Major, Minor, Dorian, <b>Shur</b> (Persian, with the koron quarter-tone second) or Chromatic (every note).</dd>
       <dt>Snap</dt><dd><b>On</b>: lines play clean notes from the scale. <b>Off</b>: they glide smoothly, exactly following your hand — great for signatures and sweeping curves.</dd>
-      <dt>Beat</dt><dd><b>Basic</b> kick + hats · <b>Boom bap</b> (90 bpm, swung) · <b>Trap</b> (140 bpm, hi-hat rolls) · <b>Lo-fi</b> (78 bpm, soft) · Off. Hip-hop beats add an <b>808 bass that follows your lowest line</b>, plus extra kicks, ghost snares and hat rolls shaped by your drawing.</dd>
+      <dt>Beat</dt><dd><b>Basic</b> kick + hats · <b>Boom bap</b> (90 bpm, swung) · <b>Trap</b> (140 bpm, hi-hat rolls) · <b>Lo-fi</b> (78 bpm, soft) · Off. Hip-hop beats add an <b>808 bass that follows your lowest line</b>, plus extra kicks, ghost snares and hat rolls shaped by your drawing. The beat's hits are shown as rings in the drum layer; set Beat to <b>Off</b> to build every drum yourself.</dd>
       <dt>⇄ Reverse</dt><dd>Plays right-to-left — handy for Persian/Arabic text so it plays in reading order.</dd>
       <dt>🎹 Keys</dt><dd>Shows the piano keyboard on the left (keys light up as they play), note names next to the playhead dots, and the chord name at the top.</dd>
       <dt>✳ Crossings</dt><dd><b>One</b>: a line plays one note at a time. <b>All</b>: where a line loops back (a signature's "b", a crossed "t"), every crossing sounds together as a chord.</dd>
@@ -248,7 +304,14 @@
       <li>Your name in a Nastaliq font with <b>Reverse</b> on and the <b>Shur</b> scale.</li>
       <li>A children's drawing in colour with <b>Colour → instrument</b>, then a <b>9:16 video</b>.</li>
       <li>Any line drawing + <b>Trap</b> + 4 bars = an instant rap beat to write over.</li>
+      <li>Set Beat to <b>Off</b> and build your own groove in the drum layer: kicks on beats 1 and 3, snares on 2 and 4, a hi-hat dash across, and a diagonal fill at the end.</li>
+      <li>Layer drawn drums on top of <b>Boom bap</b>: add claps or toms where the rings leave gaps, then lower <b>Beat</b> in the Mix.</li>
     </ul>
+    <h3>⌨️ Shortcuts & tips</h3>
+    <dl>
+      <dt>Keyboard</dt><dd><kbd>Space</kbd> play/stop · <kbd>Ctrl/⌘ Z</kbd> undo · <kbd>Delete</kbd> delete selected line · <kbd>Esc</kbd> finish editing / close this guide.</dd>
+      <dt>On a phone</dt><dd>Swiping on the canvas or drum lane draws, so scroll by swiping on the buttons or empty space — or use <b>🥁 Drums</b> to jump to the drum layer.</dd>
+    </dl>
     <p class="small">Your drawing and settings are remembered in this browser. Open this guide any time with <b>❓ Help</b>.</p>
   </div>
 </div>
@@ -271,8 +334,14 @@
     {id:'pluck',   name:'Pluck',    sym:'♪', hue:120, vol:.15, env:{pluck:true,d:.22,s:.15,r:.1}, prog:24},
     {id:'santur',  name:'Santur',   sym:'⋮', hue:300, vol:.13, env:{pluck:true,d:.16,s:.08,r:.15}, trem:true, prog:15},
     {id:'choir',   name:'Choir',    sym:'◡', hue:240, vol:.5,  env:{a:.12, r:.25},            prog:52},
+    {id:'drums',   name:'Drums',    sym:'🥁',hue:null,vol:1,   env:{a:.01,r:.05}, drum:true, prog:0},
   ];
-  INSTR.forEach(I=>{ I.color=`hsl(${I.hue},82%,68%)`; I.shift=I.shift||0; });
+  INSTR.forEach(I=>{ I.color = I.drum ? '#e8dcc4' : `hsl(${I.hue},82%,68%)`; I.shift=I.shift||0; });
+  // Drums: the height of the line picks the drum (top → bottom)
+  const DRUM_ZONES=['crash','ohat','hat','tomH','clap','snare','tomL','kick'];
+  const DRUM_NAMES={crash:'Crash',ohat:'Open hat',hat:'Hi-hat',tomH:'High tom',clap:'Clap',snare:'Snare',tomL:'Low tom',kick:'Kick'};
+  const drumZone=y=>DRUM_ZONES[Math.max(0,Math.min(7,Math.floor(y*8)))];
+  const isDrum=s=>INSTR[s.v] && INSTR[s.v].drum;
 
   const SCALES = {
     'Major pentatonic':[0,200,400,700,900],
@@ -284,7 +353,8 @@
     'Chromatic':[0,100,200,300,400,500,600,700,800,900,1000,1100],
   };
   const OCTAVES = 3, BASE = 130.81; // C3
-  const MAX_STROKES = 16;
+  const MAX_STROKES = 16;   // voices for tracing
+  const MAX_LINES = 40;     // lines kept in total (melody + drums)
 
   // ================= STATE =================
   let strokes = [];          // {pts:[{x,y}], v:instrumentIndex, c?:colour}
@@ -292,6 +362,9 @@
   let reverse = false;            // play right-to-left
   let chords = false;             // a line sounds every point it crosses at once
   let showKeys = true;            // piano keyboard + note / chord names
+  let drumRate = 16, laneH = 180, laneOn = true;      // drum layer
+  let mix = {mel:1, beat:1, b808:1, drum:1};          // mixer
+  let dataVer = 0;                                    // bumps on every save (cache key)
   const dirP = p => reverse ? 1-p : p;
   let voiceSel = 0, snap = true, beatStyle = 'basic', lineColor = null;
   let scaleName = 'Major pentatonic';
@@ -301,7 +374,7 @@
   const cv = $('cv'); let ctx2 = cv.getContext('2d');
   const msg = t => { $('exportMsg').textContent = t; };
 
-  function save(){ try{ localStorage.setItem('lineloop', JSON.stringify({strokes,scaleName,bpm,bars,snap,beatStyle,voiceSel,imgCrop,reverse,chords,showKeys})); }catch(e){} }
+  function save(){ dataVer++; try{ localStorage.setItem('lineloop', JSON.stringify({strokes,scaleName,bpm,bars,snap,beatStyle,voiceSel,imgCrop,reverse,chords,showKeys,drumRate,laneH,laneOn,mix})); }catch(e){} }
   (function load(){
     try{
       const d = JSON.parse(localStorage.getItem('lineloop')||'null');
@@ -309,7 +382,9 @@
       strokes = (d.strokes||[]).filter(s=>s&&s.pts&&INSTR[s.v]);
       scaleName = d.scaleName in SCALES ? d.scaleName : scaleName;
       bpm = d.bpm||bpm; bars = d.bars||bars; snap = d.snap!==false; beatStyle = d.beatStyle || (d.beatOn===false?'off':'basic');
-      voiceSel = INSTR[d.voiceSel] ? d.voiceSel : 0;
+      voiceSel = INSTR[d.voiceSel] && !INSTR[d.voiceSel].drum ? d.voiceSel : 0;
+      if(d.drumRate) drumRate=d.drumRate; if(d.laneH) laneH=d.laneH; laneOn = d.laneOn!==false;
+      if(d.mix) mix={...mix,...d.mix};
       if(d.imgCrop && d.imgCrop.w>0) imgCrop = d.imgCrop;
       reverse = !!d.reverse; chords = !!d.chords; showKeys = d.showKeys!==false;
     }catch(e){}
@@ -319,6 +394,7 @@
   let sel=null, mode='draw', drag=null;   // line editing state
   function showInstrument(i){
     document.querySelectorAll('.swatch').forEach((s,j)=>s.classList.toggle('sel',j===i));
+    if(INSTR[i].drum){ $('instName').textContent='Drums (drum layer)'; $('instName').style.color=INSTR[i].color; return; }
     $('instName').textContent = INSTR[i].name; $('instName').style.color = INSTR[i].color;
   }
   function selectInstrument(i){
@@ -326,6 +402,7 @@
     voiceSel=i; showInstrument(i); save();
   }
   INSTR.forEach((I,i)=>{
+    if(I.drum) return; // drums are drawn in the drum layer
     const b = document.createElement('button');
     b.className = 'swatch'; b.style.background = I.color; b.textContent = I.sym; b.title = I.name;
     b.onclick = ()=>selectInstrument(i);
@@ -369,9 +446,12 @@
     if(m==='draw') deselect();
     cv.style.cursor = m==='select' ? 'pointer' : 'crosshair';
   }
-  function hitTest(p){ // nearest line within ~16px of the tap
+  function hitTest(p, filt, Wp, Hp){ // nearest line within ~16px of the tap
+    filt = filt || (x=>!isDrum(x));
+    const W = Wp ?? mainW(), H = Hp ?? mainH();
     let best=null, bd=16;
     for(let k=strokes.length-1;k>=0;k--){
+      if(!filt(strokes[k])) continue;
       const P=strokes[k].pts;
       for(let i=0;i<P.length;i++){
         const a=P[i], b=P[i+1];
@@ -510,12 +590,15 @@
   function buildBus(c){
     const comp=c.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=4;
     const lp=c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=5000;
-    const master=c.createGain(); master.gain.value=.9;
+    const master=c.createGain(); master.gain.value=.9*mix.mel;
     const delay=c.createDelay(2), fb=c.createGain(), wet=c.createGain();
     master.connect(lp); lp.connect(comp); comp.connect(c.destination);
     lp.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(comp);
     const e=$('echo').value/100; wet.gain.value=e*.6; fb.gain.value=e*.6; delay.delayTime.value=60/bpm*.75;
-    return {comp,master,delay,fb,wet};
+    const beatBus=c.createGain(), bassBus=c.createGain(), drumBus=c.createGain();
+    beatBus.gain.value=mix.beat; bassBus.gain.value=mix.b808; drumBus.gain.value=mix.drum;
+    beatBus.connect(comp); bassBus.connect(comp); drumBus.connect(comp);
+    return {comp,master,delay,fb,wet,beatBus,bassBus,drumBus};
   }
 
   // ================= BEATS (basic / boom bap / trap / lo-fi) =================
@@ -584,6 +667,24 @@
     for(const e of ev) if(e.step%2===1) e.off+=sw*.5;
     return ev;
   }
+  // a Drums line hits on every 16th step it covers; its height picks the drum
+  function drumHitAt(st,s,steps){
+    for(const f of [.1,.5,.9]){ const y=sampleStroke(st,dirP((s+f)/steps)); if(y!==null) return drumZone(y); }
+    return null;
+  }
+  function userDrumStep(s,steps){
+    const out=[], B=BEATS[beatStyle], sw=B?(B.swing-.5)*.25:0;
+    for(const st of strokes){ if(!isDrum(st)) continue;
+      const z=drumHitAt(st,s,steps); if(!z) continue;
+      // 1/8: only hit on even steps, unless the line is a single tap that lives on this odd step
+      if(drumRate===8 && s%2===1 && drumHitAt(st,s-1,steps)) continue;
+      const acc = s%4===0 ? 1 : s%2===0 ? .8 : .6, vel=(z==='hat'||z==='ohat'?.8:1)*acc;
+      out.push({step:s, off: s%2===1 ? sw : 0, type:z, vel});
+      if(drumRate===32){ const y=sampleStroke(st,dirP((s+.75)/steps)); if(y!==null) out.push({step:s, off:.125+(s%2===1?sw:0), type:drumZone(y), vel:vel*.7}); }
+    }
+    return out;
+  }
+  function userDrumEvents(){ const steps=bars*16, out=[]; for(let s=0;s<steps;s++) out.push(...userDrumStep(s,steps)); return out; }
   function playDrum(c,dest,e,t){
     const spb=60/bpm, k=cacheFor(c), g=c.createGain(); if(e.type!=='808') g.connect(dest);
     const nz=(dur)=>{ const n=c.createBufferSource(); n.buffer=noise(c); n.start(t); n.stop(t+dur); return n; };
@@ -601,6 +702,12 @@
         g.gain.setValueAtTime(.45*e.vel,t+.03); g.gain.exponentialRampToValueAtTime(.001,t+.22); break; }
       case 'hat': case 'ohat': { const hp=filt('highpass',7500); nz(e.type==='ohat'?.35:.06).connect(hp); hp.connect(g);
         const d=e.type==='ohat'?.28:.045; g.gain.setValueAtTime(.16*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+d); break; }
+      case 'tomH': case 'tomL': { const o=c.createOscillator(), f0=e.type==='tomH'?240:130;
+        o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f0*.62,t+.25);
+        g.gain.setValueAtTime(.7*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+.4); o.connect(g); o.start(t); o.stop(t+.42);
+        const bp=filt('bandpass',f0*4,1), ng=c.createGain(); ng.gain.setValueAtTime(.12*e.vel,t); ng.gain.exponentialRampToValueAtTime(.001,t+.05); nz(.06).connect(bp); bp.connect(ng); ng.connect(dest); break; }
+      case 'crash': { const hp=filt('highpass',4500), pk=filt('peaking',8000,1); pk.gain.value=6; nz(1.8).connect(hp); hp.connect(pk); pk.connect(g);
+        g.gain.setValueAtTime(.32*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+1.6); break; }
       case 'rim': { const o=c.createOscillator(); o.type='square'; o.frequency.value=820; const bp=filt('bandpass',1700,3); o.connect(bp); bp.connect(g);
         g.gain.setValueAtTime(.35*e.vel,t); g.gain.exponentialRampToValueAtTime(.001,t+.04); o.start(t); o.stop(t+.05); break; }
       case '808': {
@@ -625,7 +732,8 @@
     while(drumTime < ac.currentTime + .12){
       const s=drumStep%steps;
       if(s===0) drumEv=beatEvents();
-      if(beatStyle!=='off') for(const e of drumEv) if(e.step===s) playDrum(ac,bus.comp,e,drumTime+e.off*spb);
+      if(beatStyle!=='off') for(const e of drumEv) if(e.step===s) playDrum(ac,e.type==='808'?bus.bassBus:bus.beatBus,e,drumTime+e.off*spb);
+      for(const e of userDrumStep(s,steps)) playDrum(ac,bus.drumBus,e,drumTime+e.off*spb);
       drumStep++; drumTime+=sdur;
     }
   }
@@ -656,6 +764,7 @@
     scheduleBeats();
     const p = phase(), now = ac.currentTime;
     for(const s of strokes){
+      if(isDrum(s)){ const y=sampleStroke(s,dirP(p)); s._ys = y===null?[]:[y]; s._y=y; continue; }
       const ys = sampleAll(s,dirP(p)), L = liveVoice(s), I=INSTR[s.v];
       const n=Math.max(ys.length, L.subs.length);
       L.g.gain.setTargetAtTime(ys.length>1 ? 1/Math.sqrt(ys.length) : 1, now, .03);
@@ -665,22 +774,59 @@
     for(const [s,L] of live) if(!strokes.includes(s)){ dropVoice(L,now); live.delete(s); }
   }
 
+  // ================= IMAGE SHAPE =================
+  // draw the crop rectangle of an image (the crop may extend past the image edges → left blank)
+  function drawCrop(c, img, crop, dx, dy, dw, dh){
+    const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+    const sx0=Math.max(0,crop.x), sy0=Math.max(0,crop.y), sx1=Math.min(1,crop.x+crop.w), sy1=Math.min(1,crop.y+crop.h);
+    if(sx1<=sx0||sy1<=sy0) return;
+    const fx=v=>dx+(v-crop.x)/crop.w*dw, fy=v=>dy+(v-crop.y)/crop.h*dh;
+    c.drawImage(img, sx0*iw, sy0*ih, (sx1-sx0)*iw, (sy1-sy0)*ih, fx(sx0), fy(sy0), fx(sx1)-fx(sx0), fy(sy1)-fy(sy0));
+  }
+  // shape (width / height) of the drawing area: the image's crop when an image is loaded
+  function contentAspect(){
+    if(!bgImg) return null;
+    const iw=bgImg.naturalWidth||bgImg.width, ih=bgImg.naturalHeight||bgImg.height;
+    return (imgCrop.w*iw)/(imgCrop.h*ih);
+  }
+  // keep very wide / very tall images usable by padding the crop (never stretching it)
+  function clampCrop(crop, img, lo=.5, hi=3){
+    const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height, a=(crop.w*iw)/(crop.h*ih), c={...crop};
+    if(a>hi){ const h=(c.w*iw/hi)/ih; c.y-=(h-c.h)/2; c.h=h; }
+    else if(a<lo){ const w=(c.h*ih*lo)/iw; c.x-=(w-c.w)/2; c.w=w; }
+    return c;
+  }
+  // size the stage so the canvas has exactly the image's shape (timeline = image width)
+  function layoutStage(){
+    const st=$('stage'), a=contentAspect();
+    if(!a){ st.style.flex=''; st.style.width=''; st.style.height=''; st.style.margin=''; st.style.minHeight=''; return; }
+    const kb=showKeys?46:0, availW=Math.max(200,document.body.clientWidth-24), maxH=Math.max(220,window.innerHeight*.55);
+    let cw=availW-kb, h=cw/a;
+    if(h>maxH){ h=maxH; cw=h*a; }
+    st.style.flex='none'; st.style.minHeight='0';
+    st.style.width=Math.round(cw+kb+2)+'px'; st.style.height=Math.round(h+2)+'px'; st.style.margin='0 auto 12px';
+  }
+
   // ================= DRAWING =================
   let W=0,H=0,dpr=1;
+  const mainW=()=>W, mainH=()=>H;
+  var laneReady=false;
   function resize(){
     const r = cv.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio||1,2);
     W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; ctx2.setTransform(dpr,0,0,dpr,0,0);
     const kr=$('kb').getBoundingClientRect(); $('kb').width=Math.max(1,kr.width*dpr); $('kb').height=Math.max(1,kr.height*dpr);
+    if(laneReady) layoutLane();
   }
-  window.addEventListener('resize',resize); resize();
+  window.addEventListener('resize',()=>{ layoutStage(); resize(); layoutLane(); }); resize();
 
   let cur=null, preview=null;
   const norm = e => { const r=cv.getBoundingClientRect(); return {x:Math.min(Math.max((e.clientX-r.left)/r.width,0),1), y:Math.min(Math.max((e.clientY-r.top)/r.height,0),1)}; };
   // pen API shared by mouse/touch and camera hand tracking (p = normalised {x,y})
-  function penDown(p){
+  function penDown(p, vIdx=voiceSel){
     ensureAudio(); ac.resume();
-    cur={pts:[p],v:voiceSel}; if(lineColor) cur.c=lineColor;
-    const v=makeVoice(ac,bus.master,INSTR[voiceSel]); v.start(ac.currentTime); v.setFreq(yToFreq(p.y),ac.currentTime,false); v.attack(ac.currentTime);
+    cur={pts:[p],v:vIdx}; if(lineColor && !INSTR[vIdx].drum) cur.c=lineColor;
+    if(INSTR[vIdx].drum){ const z=drumZone(p.y); playDrum(ac,bus.drumBus,{type:z,vel:1},ac.currentTime); preview={drum:z}; updateEmpty(); return; }
+    const v=makeVoice(ac,bus.master,INSTR[vIdx]); v.start(ac.currentTime); v.setFreq(yToFreq(p.y),ac.currentTime,false); v.attack(ac.currentTime);
     preview={v,last:yToFreq(p.y)};
     updateEmpty();
   }
@@ -689,13 +835,14 @@
     const last=cur.pts[cur.pts.length-1];
     if(Math.hypot((p.x-last.x)*W,(p.y-last.y)*H) < 3) return;
     cur.pts.push(p);
+    if(preview && preview.drum){ const z=drumZone(p.y); if(z!==preview.drum){ playDrum(ac,bus.drumBus,{type:z,vel:.9},ac.currentTime); preview.drum=z; } return; }
     if(preview){ const f=yToFreq(p.y); if(Math.abs(f-preview.last)>.5){ preview.v.setFreq(f,ac.currentTime,!snap); if(snap) preview.v.retrig(ac.currentTime); preview.last=f; } }
   }
   cv.addEventListener('pointerdown',e=>{
     cv.setPointerCapture(e.pointerId);
     const p=norm(e);
     if(mode==='select'){
-      const s=hitTest(p);
+      const s=hitTest(p, x=>!isDrum(x), W, H);
       if(s){ selectLine(s); drag={p0:p, orig:s.pts.map(q=>({...q}))}; } else deselect();
       return;
     }
@@ -703,25 +850,30 @@
   });
   cv.addEventListener('pointermove',e=>{
     const p=norm(e);
-    if(drag && sel){ // move the selected line (time and pitch), kept inside the canvas
-      const xs=drag.orig.map(q=>q.x), ys=drag.orig.map(q=>q.y);
-      const dx=Math.max(-Math.min(...xs), Math.min(1-Math.max(...xs), p.x-drag.p0.x));
-      const dy=Math.max(-Math.min(...ys), Math.min(1-Math.max(...ys), p.y-drag.p0.y));
-      sel.pts = drag.orig.map(q=>{ const n={x:+(q.x+dx).toFixed(4), y:+(q.y+dy).toFixed(4)}; if(q.b) n.b=1; return n; });
-      return;
-    }
+    if(drag && sel){ dragTo(p); return; }
     penMove(p);
   });
+  function dragTo(p){ // move the selected line (time and pitch), kept inside its canvas
+    const xs=drag.orig.map(q=>q.x), ys=drag.orig.map(q=>q.y);
+    const dx=Math.max(-Math.min(...xs), Math.min(1-Math.max(...xs), p.x-drag.p0.x));
+    const dy=Math.max(-Math.min(...ys), Math.min(1-Math.max(...ys), p.y-drag.p0.y));
+    sel.pts = drag.orig.map(q=>{ const n={x:+(q.x+dx).toFixed(4), y:+(q.y+dy).toFixed(4)}; if(q.b) n.b=1; return n; });
+    dataVer++;
+  }
   const pointerEnd=()=>{ if(drag){ drag=null; save(); return; } endStroke(); };
   const endStroke = ()=>{
     if(!cur) return;
-    if(preview){ preview.v.release(ac.currentTime); preview.v.stop(ac.currentTime+1.5); preview=null; }
+    if(preview){ if(preview.v){ preview.v.release(ac.currentTime); preview.v.stop(ac.currentTime+1.5); } preview=null; }
     let P=cur.pts;
     const span = Math.max(...P.map(p=>p.x))-Math.min(...P.map(p=>p.x));
-    if(span<0.012){ const p=P[0]; P=[{x:Math.max(0,p.x-.012),y:p.y},{x:Math.min(1,p.x+.012),y:p.y}]; }
+    if(span<0.012){ const p=P[0];
+      if(INSTR[cur.v].drum){ // a drum tap = exactly one hit, centred on its grid step
+        const steps=bars*16, st=Math.min(steps-1,Math.max(0,Math.floor(p.x*steps))), c=(st+.5)/steps, half=.3/steps;
+        P=[{x:c-half,y:p.y},{x:c+half,y:p.y}];
+      } else P=[{x:Math.max(0,p.x-.012),y:p.y},{x:Math.min(1,p.x+.012),y:p.y}]; }
     cur.pts = P.map(p=>({x:+p.x.toFixed(4),y:+p.y.toFixed(4)}));
     delete cur._drawing;
-    strokes.push(cur); if(strokes.length>MAX_STROKES) strokes.shift();
+    strokes.push(cur); if(strokes.length>MAX_LINES) strokes.shift();
     cur=null; save(); updateEmpty();
   };
   cv.addEventListener('pointerup',pointerEnd);
@@ -730,7 +882,7 @@
   let bgImg=null, imgOp=.35;
   function drawGrid(){
     ctx2.fillStyle='#0b0d11'; ctx2.fillRect(0,0,W,H);
-    if(bgImg && imgOp>0){ ctx2.globalAlpha=imgOp; { const iw=bgImg.naturalWidth||bgImg.width, ih=bgImg.naturalHeight||bgImg.height; ctx2.drawImage(bgImg,imgCrop.x*iw,imgCrop.y*ih,imgCrop.w*iw,imgCrop.h*ih,0,0,W,H); } ctx2.globalAlpha=1; ctx2.fillStyle='rgba(11,13,17,.25)'; ctx2.fillRect(0,0,W,H); }
+    if(bgImg && imgOp>0){ ctx2.globalAlpha=imgOp; drawCrop(ctx2,bgImg,imgCrop,0,0,W,H); ctx2.globalAlpha=1; ctx2.fillStyle='rgba(11,13,17,.25)'; ctx2.fillRect(0,0,W,H); }
     const d=degrees(), n=d.length-1;
     for(let i=0;i<=n;i++){
       const y = H*(1-i/n), isRoot = d[i]%1200===0;
@@ -779,6 +931,7 @@
       const co=$('chordOut');
       if(soundingNow.chord){ co.style.display='block'; if(co.textContent!==soundingNow.chord) co.textContent=soundingNow.chord; } else co.style.display='none';
     } else $('chordOut').style.display='none';
+    drawLaneScreen();
     if(rec) recordFrame();
     requestAnimationFrame(frame);
   }
@@ -833,11 +986,11 @@
   let soundingNow={keys:new Map(), notes:[], chord:''};
   function collectSounding(){
     const keys=new Map(), notes=[];
-    if(playing) for(const s of strokes) for(const yy of (s._ys||[])){
+    if(playing) for(const s of strokes) if(!isDrum(s)) for(const yy of (s._ys||[])){
       const m=69+12*Math.log2(yToFreq(yy)/440);
       keys.set(Math.round(m), colOf(s)); notes.push(Math.round((m+INSTR[s.v].shift)*2)/2);
     }
-    if(cur && cur.pts.length){ const m=69+12*Math.log2(yToFreq(cur.pts[cur.pts.length-1].y)/440); keys.set(Math.round(m), cur.c||INSTR[cur.v].color); }
+    if(cur && cur.pts.length && !INSTR[cur.v].drum){ const m=69+12*Math.log2(yToFreq(cur.pts[cur.pts.length-1].y)/440); keys.set(Math.round(m), cur.c||INSTR[cur.v].color); }
     soundingNow={keys, notes, chord: chordName(notes)};
   }
 
@@ -849,14 +1002,14 @@
     }
     const p = phase();
     if(sel && !strokes.includes(sel)) deselect(); // line removed by undo / clear / demo / trace
-    if(sel && !forVideo){ // selection halo
+    if(sel && !forVideo && !isDrum(sel)){ // selection halo
       ctx2.save(); ctx2.setLineDash([7,6]); ctx2.strokeStyle='rgba(255,255,255,.85)'; ctx2.lineWidth=1.5;
       const xs=sel.pts.map(q=>q.x*W), ys=sel.pts.map(q=>q.y*H), pad=10;
       const x0=Math.min(...xs)-pad, y0=Math.min(...ys)-pad;
       ctx2.strokeRect(x0,y0,Math.max(...xs)+pad-x0,Math.max(...ys)+pad-y0); ctx2.restore();
     }
-    for(const s of strokes) drawStroke(s, (playing && s._y!=null) || (s===sel && !forVideo), false);
-    if(cur) drawStroke(cur,true,true);
+    for(const s of strokes) if(!isDrum(s)) drawStroke(s, (playing && s._y!=null) || (s===sel && !forVideo), false);
+    if(cur && !INSTR[cur.v].drum) drawStroke(cur,true,true);
     if(cam.on && cam.tip && !forVideo){ // fingertip cursor: ring = hovering, filled = drawing
       const x=cam.tip.x*W, y=cam.tip.y*H, col=lineColor||INSTR[voiceSel].color;
       ctx2.strokeStyle=col; ctx2.fillStyle=col; ctx2.lineWidth=2.5; ctx2.shadowColor=col; ctx2.shadowBlur=14;
@@ -867,12 +1020,12 @@
       const grd=ctx2.createLinearGradient(x+tr,0,x,0); grd.addColorStop(0,'rgba(255,209,102,0)'); grd.addColorStop(1,'rgba(255,209,102,.12)');
       ctx2.fillStyle=grd; ctx2.fillRect(Math.min(x,x+tr),0,40,H);
       ctx2.strokeStyle='#ffd166'; ctx2.lineWidth=2; ctx2.beginPath(); ctx2.moveTo(x,0); ctx2.lineTo(x,H); ctx2.stroke();
-      for(const s of strokes) for(const yy of (s._ys||[])){
-        const y=(snap?snapY(yy):yy)*H;
+      for(const s of strokes) if(!isDrum(s)) for(const yy of (s._ys||[])){
+        const y=(snap&&!isDrum(s)?snapY(yy):yy)*H;
         ctx2.fillStyle='#fff'; ctx2.shadowColor=colOf(s); ctx2.shadowBlur=20;
         ctx2.beginPath(); ctx2.arc(x,y,6,0,Math.PI*2); ctx2.fill(); ctx2.shadowBlur=0;
         if(showKeys){
-          const m=69+12*Math.log2(yToFreq(yy)/440)+INSTR[s.v].shift, lab=noteLabel(Math.round(m*2)/2);
+          const lab = isDrum(s) ? DRUM_NAMES[drumZone(yy)] : noteLabel(Math.round((69+12*Math.log2(yToFreq(yy)/440)+INSTR[s.v].shift)*2)/2);
           ctx2.font='600 11px ui-sans-serif,system-ui,sans-serif'; ctx2.textBaseline='middle';
           const tw=ctx2.measureText(lab).width, lx = reverse ? x-14-tw : x+12;
           ctx2.fillStyle='rgba(11,13,17,.8)'; ctx2.fillRect(lx-3,y-8,tw+6,16);
@@ -881,7 +1034,101 @@
       }
     }
   }
+  // ================= DRUM LAYER (second lane, same timeline) =================
+  const DRUM_IDX = INSTR.findIndex(I=>I.drum);
+  const DRUM_COL={kick:'#ff6b6b',snare:'#ffd166',rim:'#ffd166',clap:'#f4a261',hat:'#8ecae6',ohat:'#90e0ef',tomH:'#c77dff',tomL:'#9d4edd',crash:'#e9edc9'};
+  const rowOf=t=>({crash:0,ohat:1,hat:2,tomH:3,clap:4,snare:5,rim:5,tomL:6,kick:7})[t];
+  const lcv=$('lcv'), lctx=lcv.getContext('2d');
+  let LW=0, LH=0, laneGut=0, laneCache={ver:-1};
+  function laneData(){ // beat ghosts + drawn hits, rebuilt only when something changed
+    const key=dataVer+'|'+bars+'|'+beatStyle+'|'+reverse+'|'+drumRate;
+    if(laneCache.key!==key) laneCache={key, ghost: beatStyle!=='off' ? beatEvents().filter(e=>e.type!=='808') : [], hits: userDrumEvents()};
+    return laneCache;
+  }
+  // draw the lane: timeline area at (tx,ty,TW,TH); drum names in a gutter of width gw to the left (or inside if gw=0)
+  function drawLane(c, tx, ty, TW, TH, gw, forVideo){
+    const steps=bars*16, rowH=TH/8, D=laneData(), p=phase(), cur16=playing?Math.floor(dirP(p)*steps):-1;
+    c.save();
+    c.fillStyle='#0b0d11'; c.fillRect(tx-gw,ty,TW+gw,TH);
+    DRUM_ZONES.forEach((z,i)=>{ if(i%2===0){ c.fillStyle='rgba(232,220,196,.045)'; c.fillRect(tx,ty+i*rowH,TW,rowH); } });
+    // 16th grid
+    for(let s=1;s<steps;s++){ const x=tx+TW*s/steps; c.strokeStyle = s%16===0 ? 'rgba(255,255,255,.22)' : s%4===0 ? 'rgba(255,255,255,.09)' : 'rgba(255,255,255,.035)'; c.beginPath(); c.moveTo(x,ty); c.lineTo(x,ty+TH); c.stroke(); }
+    // labels
+    c.font=`600 ${Math.max(8,Math.min(11,rowH*.55))}px ui-sans-serif,system-ui,sans-serif`; c.textBaseline='middle';
+    DRUM_ZONES.forEach((z,i)=>{ const y=ty+i*rowH+rowH/2;
+      if(gw>0){ c.fillStyle='#14171d'; c.fillRect(tx-gw,ty+i*rowH,gw,rowH); c.fillStyle=DRUM_COL[z]; c.textAlign='right'; c.fillText(DRUM_NAMES[z].replace('Open hat','Open').replace('High tom','Tom H').replace('Low tom','Tom L'), tx-5, y); }
+      else { c.fillStyle=DRUM_COL[z]+'99'; c.textAlign='left'; c.fillText(DRUM_NAMES[z], tx+4, y); } });
+    const cell=TW/steps, sz=Math.max(3,Math.min(cell*.7,rowH*.6));
+    const hx=(e)=>{ const st = reverse ? steps-1-e.step : e.step; return tx+(st+.5)*cell + (reverse?-1:1)*e.off*4*cell; };
+    // beat-style hits (faint rings)
+    for(const e of D.ghost){ const r=rowOf(e.type); if(r===undefined) continue; const x=hx(e), y=ty+r*rowH+rowH/2;
+      c.strokeStyle=DRUM_COL[e.type]+(e.step===cur16?'ff':'55'); c.lineWidth=1.2; c.beginPath(); c.arc(x,y,sz*.42,0,7); c.stroke(); }
+    // drawn drum lines
+    for(const s of strokes){ if(!isDrum(s)) continue;
+      c.strokeStyle = s===sel && !forVideo ? '#ffffff' : 'rgba(232,220,196,.45)'; c.lineWidth = s===sel && !forVideo ? 2.5 : 1.5; c.lineCap='round';
+      c.beginPath(); s.pts.forEach((q,i)=>{ const x=tx+q.x*TW, y=ty+q.y*TH; (i===0||q.b)?c.moveTo(x,y):c.lineTo(x,y); }); c.stroke(); }
+    if(cur && INSTR[cur.v].drum){ c.strokeStyle='#ffffff'; c.lineWidth=2.5; c.beginPath(); cur.pts.forEach((q,i)=>{ const x=tx+q.x*TW, y=ty+q.y*TH; i?c.lineTo(x,y):c.moveTo(x,y); }); c.stroke(); }
+    // drawn hits (solid blocks, flash when played)
+    for(const e of D.hits){ const r=rowOf(e.type), x=hx(e), y=ty+r*rowH+rowH/2, on=e.step===cur16, k=on?1.35:1;
+      c.fillStyle=DRUM_COL[e.type]; c.globalAlpha=on?1:.85; if(on){ c.shadowColor=DRUM_COL[e.type]; c.shadowBlur=12; }
+      c.fillRect(x-sz*k/2,y-sz*k/2,sz*k,sz*k); c.shadowBlur=0; c.globalAlpha=1; }
+    // selection box
+    if(sel && isDrum(sel) && !forVideo){ const xs=sel.pts.map(q=>tx+q.x*TW), ys=sel.pts.map(q=>ty+q.y*TH);
+      c.setLineDash([6,5]); c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=1.2; c.strokeRect(Math.min(...xs)-6,Math.min(...ys)-6,Math.max(...xs)-Math.min(...xs)+12,Math.max(...ys)-Math.min(...ys)+12); c.setLineDash([]); }
+    // playhead
+    if(playing){ const x=tx+dirP(p)*TW; c.strokeStyle='#ffd166'; c.lineWidth=2; c.beginPath(); c.moveTo(x,ty); c.lineTo(x,ty+TH); c.stroke(); }
+    c.strokeStyle='rgba(255,255,255,.12)'; c.strokeRect(tx-gw+.5,ty+.5,TW+gw-1,TH-1);
+    c.restore();
+  }
+  function layoutLane(){
+    const st=$('stage'), ln=$('lane');
+    ln.hidden=!laneOn; $('laneToggle').textContent = laneOn ? 'Hide lane' : 'Show lane';
+    ln.style.width=st.style.width||''; ln.style.margin = st.style.width ? '0 auto 10px' : '';
+    ln.style.height=laneH+'px';
+    const r=lcv.getBoundingClientRect(); LW=r.width; LH=r.height;
+    lcv.width=Math.max(1,LW*dpr); lcv.height=Math.max(1,LH*dpr);
+    laneGut = cv.offsetLeft||0;
+  }
+  function drawLaneScreen(){
+    if(!laneOn || !LW) return;
+    lctx.setTransform(dpr,0,0,dpr,0,0);
+    drawLane(lctx, laneGut, 0, LW-laneGut, LH, laneGut, false);
+  }
+  const laneNorm=e=>{ const r=lcv.getBoundingClientRect(), TW=r.width-laneGut; return {x:Math.min(Math.max((e.clientX-r.left-laneGut)/TW,0),1), y:Math.min(Math.max((e.clientY-r.top)/r.height,0),1)}; };
+  lcv.addEventListener('pointerdown',e=>{
+    lcv.setPointerCapture(e.pointerId);
+    const p=laneNorm(e);
+    if(mode==='select'){
+      const s=hitTest(p, isDrum, LW-laneGut, LH);
+      if(s){ selectLine(s); drag={p0:p, orig:s.pts.map(q=>({...q}))}; } else deselect();
+      return;
+    }
+    penDown(p, DRUM_IDX);
+  });
+  lcv.addEventListener('pointermove',e=>{ const p=laneNorm(e); if(drag && sel){ dragTo(p); return; } penMove(p); });
+  lcv.addEventListener('pointerup',()=>pointerEnd());
+  lcv.addEventListener('pointercancel',()=>pointerEnd());
+  $('drumRate').value=String(drumRate); $('laneH').value=String(laneH);
+  $('drumRate').onchange=e=>{ drumRate=+e.target.value; save(); };
+  $('laneH').onchange=e=>{ laneH=+e.target.value; layoutLane(); save(); };
+  $('laneToggle').onclick=()=>{ laneOn=!laneOn; layoutLane(); save(); };
+  $('toDrums').onclick=()=>{ laneOn=true; layoutLane(); save(); $('lane').scrollIntoView({behavior:'smooth',block:'center'}); };
+  $('drumUndo').onclick=()=>{ for(let i=strokes.length-1;i>=0;i--) if(isDrum(strokes[i])){ strokes.splice(i,1); break; } save(); updateEmpty(); };
+  $('drumClear').onclick=()=>{ strokes=strokes.filter(s=>!isDrum(s)); save(); updateEmpty(); };
+  // ---- mixer ----
+  function applyMix(){
+    if(!ac) return; const t=ac.currentTime;
+    bus.master.gain.setTargetAtTime(.9*mix.mel,t,.03); bus.beatBus.gain.setTargetAtTime(mix.beat,t,.03);
+    bus.bassBus.gain.setTargetAtTime(mix.b808,t,.03); bus.drumBus.gain.setTargetAtTime(mix.drum,t,.03);
+  }
+  [['mixMel','mel'],['mixBeat','beat'],['mix808','b808'],['mixDrum','drum']].forEach(([id,k])=>{
+    $(id).value=Math.round(mix[k]*100);
+    $(id).oninput=e=>{ mix[k]=e.target.value/100; $(id+'v').textContent=e.target.value+'%'; applyMix(); save(); };
+    $(id+'v').textContent=Math.round(mix[k]*100)+'%';
+  });
+
   requestAnimationFrame(frame);
+  laneReady=true; layoutLane();
 
   function updateEmpty(){ $('empty').style.display = strokes.length||cur||bgImg ? 'none':'grid'; }
   updateEmpty();
@@ -996,7 +1243,7 @@
   };
   $('rev').onclick = ()=>{ reverse=!reverse; syncToggles(); save(); };
   $('chords').onclick = ()=>{ chords=!chords; syncToggles(); save(); };
-  $('keys').onclick = ()=>{ showKeys=!showKeys; syncToggles(); resize(); save(); };
+  $('keys').onclick = ()=>{ showKeys=!showKeys; syncToggles(); layoutStage(); resize(); save(); };
   $('bars').onchange = e=>{ const p=phase(); bars=+e.target.value; if(playing){ startT = ac.currentTime - p*loopDur(); realignDrums(); } save(); };
   $('bpm').oninput = e=>{
     const p=phase(); bpm=+e.target.value; $('bpmv').textContent=bpm;
@@ -1010,13 +1257,14 @@
     if(mx!==mn){ const d=mx-mn; s=l>.5?d/(2-mx-mn):d/(mx+mn);
       h = mx===r ? ((g-b)/d+(g<b?6:0)) : mx===g ? ((b-r)/d+2) : ((r-g)/d+4); h*=60; }
     return [h,s,l]; };
-  const nearestHue=h=>{ let best=0,bd=1e9; INSTR.forEach((I,i)=>{ const d=Math.min(Math.abs(I.hue-h),360-Math.abs(I.hue-h)); if(d<bd){bd=d;best=i;} }); return best; };
+  const nearestHue=h=>{ let best=0,bd=1e9; INSTR.forEach((I,i)=>{ if(I.drum) return; const d=Math.min(Math.abs(I.hue-h),360-Math.abs(I.hue-h)); if(d<bd){bd=d;best=i;} }); return best; };
   const GREY_SETS=[['santur','bell'],['ney','strings'],['bass','choir']];
 
   function setImage(src, doTrace, after){
     const im=new Image();
     im.onload=()=>{
       bgImg=im; $('retrace').disabled=false; $('rmimg').disabled=false; updateEmpty();
+      if(!doTrace){ layoutStage(); resize(); }
       if(doTrace) trace();
       if(after) after();
       try{ const c=document.createElement('canvas'), s=Math.min(1,640/Math.max(im.width,im.height));
@@ -1034,7 +1282,7 @@
     const c=document.createElement('canvas'); c.width=GW; c.height=GH;
     const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,GW,GH);
     const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
-    g.drawImage(img, crop.x*iw, crop.y*ih, crop.w*iw, crop.h*ih, 0, 0, GW, GH);
+    drawCrop(g, img, crop, 0, 0, GW, GH);
     const px=g.getImageData(0,0,GW,GH).data, L=new Float32Array(GW*GH);
     for(let i=0;i<GW*GH;i++) L[i]=(.299*px[i*4]+.587*px[i*4+1]+.114*px[i*4+2])/255;
     return {px,L};
@@ -1161,7 +1409,8 @@
   function trace(){
     if(!bgImg) return;
     const N=Math.min(MAX_STROKES,+$('tlines').value), mode=$('tmode').value, detail=+$('tdetail').value;
-    imgCrop = $('tfit').checked ? inkCrop(bgImg) : {x:0,y:0,w:1,h:1};
+    imgCrop = clampCrop($('tfit').checked ? inkCrop(bgImg) : {x:0,y:0,w:1,h:1}, bgImg);
+    layoutStage(); resize();
     const iw=bgImg.naturalWidth||bgImg.width, ih=bgImg.naturalHeight||bgImg.height;
     const aspect=(imgCrop.w*iw)/(imgCrop.h*ih), long=160+detail*110; // detail 1..5 → 270..710 px
     const GW = aspect>=1 ? long : Math.max(24,Math.round(long*aspect));
@@ -1254,7 +1503,7 @@
       const [h,s,l]=hslOf(...rgb), colourful=k.startsWith('h');
       const col = colourful ? `hsl(${Math.round(h)},${Math.round(Math.max(s,.6)*100)}%,${Math.round(Math.min(.8,Math.max(l,.62))*100)}%)` : null;
       let insts;
-      if(!useMap) insts=[(voiceSel+ki)%INSTR.length];
+      if(!useMap){ const mel=INSTR.map((I,i)=>i).filter(i=>!INSTR[i].drum); insts=[ INSTR[voiceSel].drum ? voiceSel : mel[(mel.indexOf(voiceSel)+ki)%mel.length] ]; }
       else if(colourful) insts=[+k.slice(1)];
       else { const set=GREY_SETS[+k.slice(4)]; insts=set.map(id=>INSTR.findIndex(I=>I.id===id)); }
       const cleaned=list.map(sg=>sg.raw.length<5 ? sg.raw : rdp(smooth(sg.raw,sw),eps));
@@ -1345,7 +1594,7 @@
   $('tdetail').onchange=()=>{ if(bgImg) trace(); };
   $('tfit').onchange=()=>{ if(bgImg) trace(); };
   $('imgop').oninput=e=>{ imgOp=e.target.value/100; };
-  $('rmimg').onclick=()=>{ bgImg=null; imgCrop={x:0,y:0,w:1,h:1}; save(); $('retrace').disabled=true; $('rmimg').disabled=true; updateEmpty(); try{localStorage.removeItem('lineloop-img');}catch(e){} };
+  $('rmimg').onclick=()=>{ bgImg=null; imgCrop={x:0,y:0,w:1,h:1}; layoutStage(); resize(); save(); $('retrace').disabled=true; $('rmimg').disabled=true; updateEmpty(); try{localStorage.removeItem('lineloop-img');}catch(e){} };
   try{ const saved=localStorage.getItem('lineloop-img'); if(saved) setImage(saved,false); }catch(e){}
 
   // ================= CAMERA HAND TRACKING =================
@@ -1460,6 +1709,7 @@
   function scoreParts(){
     const flats=preferFlats(), parts=[], nameCount={};
     for(const s of strokes){
+      if(isDrum(s)) continue;
       const notes=extractNotes(s); if(!notes.length) continue;
       const I=INSTR[s.v]; nameCount[I.name]=(nameCount[I.name]||0)+1;
       const items=[]; let cur=0, total=bars*16;
@@ -1586,6 +1836,22 @@
   }
   const restart=()=>{ if(playing) stop(); play(); };
   const SAMPLES={
+    drums(){ // a hand-built groove in the drum layer over a simple melody
+      setControls({scale:'Minor pentatonic',bpm:92,bars:2,beat:'off',snap:true,reverse:false,chords:false});
+      const steps=32, Y={crash:.0625,ohat:.1875,hat:.3125,tomH:.4375,clap:.5625,snare:.6875,tomL:.8125,kick:.9375};
+      const tap=(z,st)=>({v:DRUM_IDX,pts:[{x:+((st+.2)/steps).toFixed(4),y:Y[z]},{x:+((st+.8)/steps).toFixed(4),y:Y[z]}]});
+      const dash=(z,a,b)=>({v:DRUM_IDX,pts:[{x:+((a+.2)/steps).toFixed(4),y:Y[z]},{x:+((b+.8)/steps).toFixed(4),y:Y[z]}]});
+      const mel=(id,fn,x0,x1,n)=>{ const pts=[]; for(let i=0;i<=n;i++){ const x=x0+(x1-x0)*i/n; pts.push({x:+x.toFixed(4),y:+fn(x).toFixed(4)}); } return {pts,v:INSTR.findIndex(I=>I.id===id)}; };
+      strokes=[
+        mel('pluck',x=>.42-.18*Math.sin(x*Math.PI*6),0,1,90), mel('bass',()=>.82,0,.46,4), mel('bass',()=>.74,.5,.96,4),
+        tap('crash',0), ...[0,6,10,16,22].map(s=>tap('kick',s)), ...[4,12,20].map(s=>tap('snare',s)), tap('clap',12), tap('clap',20),
+        dash('hat',0,27), tap('ohat',14),
+        {v:DRUM_IDX,pts:[{x:+(28.2/steps).toFixed(4),y:Y.tomH},{x:+(31.8/steps).toFixed(4),y:Y.kick}]},   // fill: toms → kick
+      ];
+      laneOn=true; layoutLane(); save(); updateEmpty(); restart();
+      msg('Sample: a groove drawn in the drum layer — tap rows to add hits, drag along a row for a roll');
+      setTimeout(()=>$('lane').scrollIntoView({behavior:'smooth',block:'center'}),200);
+    },
     wave(){ // a flowing Ney line over Strings and Bass
       setControls({scale:'Major pentatonic',bpm:96,bars:2,beat:'basic',snap:true,reverse:false,chords:false});
       const line=(id,fn,x0,x1,n)=>{ const pts=[]; for(let i=0;i<=n;i++){ const x=x0+(x1-x0)*i/n; pts.push({x:+x.toFixed(4),y:+fn(x).toFixed(4)}); } return {pts,v:INSTR.findIndex(I=>I.id===id)}; };
@@ -1634,9 +1900,12 @@
     $('tfit').checked=true; $('cmap').checked=true; $('imgop').value=35; imgOp=.35;
     $('txt').value=''; $('bold').checked=false; if($('font').options && $('font').options.length) $('font').selectedIndex=0;
     $('gesture').value='pinch'; $('camop').value=30; camOp=.3; camMsg('');
+    drumRate=16; laneH=180; laneOn=true; mix={mel:1,beat:1,b808:1,drum:1};
+    $('drumRate').value='16'; $('laneH').value='180';
+    [['mixMel','mel'],['mixBeat','beat'],['mix808','b808'],['mixDrum','drum']].forEach(([id,k])=>{ $(id).value=100; $(id+'v').textContent='100%'; }); applyMix();
     $('sheet').hidden=true;
     try{ ['lineloop','lineloop-img','lineloop-font'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
-    syncToggles(); resize(); updateEmpty();
+    syncToggles(); layoutStage(); resize(); updateEmpty();
     msg('Reset — everything is back to the start');
     openHelp();
   }
@@ -1673,13 +1942,21 @@
   }
   function recordFrame(){
     // draw the same scene into the high-res recording canvas by swapping the drawing target
-    const keep=[ctx2,W,H];
-    ctx2=rec.ctx; W=rec.W; H=rec.H;
-    ctx2.setTransform(rec.scale,0,0,rec.scale,0,0);
-    render(true);
+    const keep=[ctx2,W,H], S=rec.scale, fw=rec.W, kb=showKeys?32:0, a=contentAspect();
+    const laneV = laneOn && (strokes.some(isDrum) || beatStyle!=='off') ? Math.round(rec.H*.22) : 0, fh=rec.H-laneV;
+    ctx2=rec.ctx;
+    // content rectangle: the image's shape when there is one, centred; otherwise the whole frame
+    let cw=fw-kb, ch=fh;
+    if(a){ if(cw/ch>a) cw=ch*a; else ch=cw/a; }
+    const ox=kb+(fw-kb-cw)/2, oy=(fh-ch)/2;
+    ctx2.setTransform(S,0,0,S,0,0); ctx2.fillStyle='#0b0d11'; ctx2.fillRect(0,0,fw,fh);
+    ctx2.setTransform(S,0,0,S,ox*S,oy*S); W=cw; H=ch;
+    ctx2.save(); ctx2.beginPath(); ctx2.rect(0,0,cw,ch); ctx2.clip(); render(true); ctx2.restore();
+    if(showKeys){ ctx2.setTransform(S,0,0,S,(ox-kb)*S,oy*S); drawKeyboard(ctx2, 0, kb, ch, soundingNow.keys); }
+    ctx2.setTransform(S,0,0,S,0,0); W=fw; H=fh;
+    if(laneV){ ctx2.fillStyle='#0b0d11'; ctx2.fillRect(0,fh,fw,laneV); drawLane(ctx2, ox, fh+3, cw, laneV-6, Math.min(kb||0, ox), true); }
     // caption
     const cx0 = showKeys ? 44 : 14;
-    if(showKeys) drawKeyboard(ctx2, 0, 32, H, soundingNow.keys);
     ctx2.font='600 15px ui-sans-serif,system-ui,sans-serif'; ctx2.fillStyle='rgba(233,236,242,.85)'; ctx2.textBaseline='top';
     ctx2.fillText('Line Loop', cx0, 12);
     ctx2.font='12px ui-sans-serif,system-ui,sans-serif'; ctx2.fillStyle='rgba(138,147,166,.9)';
@@ -1734,6 +2011,7 @@
     const ob = buildBus(oc);
     const dt = 0.004;
     for(const s of strokes){
+      if(isDrum(s)) continue;
       const I=INSTR[s.v], g=oc.createGain(); g.gain.value=1; g.connect(ob.master);
       const subs=[]; let lastN=1;
       for(let t=0; t<total; t+=dt){
@@ -1746,9 +2024,9 @@
       }
       subs.forEach(u=>u.v.stop(total));
     }
-    if(beatStyle!=='off'){
-      const ev=beatEvents(), sdur=Ld/(bars*16), spb=60/bpm;
-      for(let L=0; L<=loops; L++) for(const e of ev.slice().sort((a,b)=>a.step-b.step||a.off-b.off)) playDrum(oc,ob.comp,e,L*Ld+e.step*sdur+e.off*spb);
+    {
+      const ev=[...(beatStyle!=='off'?beatEvents():[]), ...userDrumEvents().map(e=>({...e,user:true}))], sdur=Ld/(bars*16), spb=60/bpm;
+      for(let L=0; L<=loops; L++) for(const e of ev.slice().sort((a,b)=>a.step-b.step||a.off-b.off)) playDrum(oc, e.user?ob.drumBus : e.type==='808'?ob.bassBus:ob.beatBus, e, L*Ld+e.step*sdur+e.off*spb);
     }
     const buf = await oc.startRendering();
     const start = Math.round(Ld*sr), len = buf.length-start, ch=[buf.getChannelData(0),buf.getChannelData(1)];
@@ -1781,7 +2059,7 @@
       {t:0,o:0,d:[0xff,0x58,4,4,2,24,8]},
     ]));
     const chans=[0,1,2,3,4,5,6,7,8,10,11,12,13,14]; // 9 = drums, 15 = 808
-    strokes.forEach((s,si)=>{
+    strokes.filter(s=>!isDrum(s)).forEach((s,si)=>{
       const I=INSTR[s.v], ch=chans[si%chans.length], tn=enc(I.name);
       const evs=[
         {t:0,o:0,d:[0xff,0x03,tn.length,...tn]},
@@ -1810,8 +2088,9 @@
       }
       tracks.push(track(evs));
     });
-    if(beatStyle!=='off'){
-      const ev=beatEvents(), GM={kick:36,snare:38,clap:39,hat:42,ohat:46,rim:37};
+    const allDrums=[...(beatStyle!=='off'?beatEvents():[]), ...userDrumEvents()];
+    if(allDrums.length){
+      const ev=allDrums, GM={kick:36,snare:38,clap:39,hat:42,ohat:46,rim:37,tomH:48,tomL:45,crash:49};
       const evs=[{t:0,o:0,d:[0xff,0x03,5,...enc('Drums')]}], bass=[{t:0,o:0,d:[0xff,0x03,3,...enc('808')]},{t:0,o:0,d:[0xcf,38]}];
       for(let k=0;k<loops;k++) for(const e of ev){
         const t=Math.round(k*loopT+(e.step/4+e.off)*PPQ), vel=Math.max(1,Math.min(127,Math.round(e.vel*127)));
